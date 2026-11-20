@@ -1,204 +1,88 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Play, ArrowDown, Sparkles, Film, ArrowRight } from 'lucide-react';
-import { personalData } from '../data/personalData';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
+import { useRef } from 'react';
+import { ArrowDown, ArrowUpRight } from 'lucide-react';
+import './Hero.css';
 
-export default function Hero({ onOpenFeaturedShowreel }) {
-  const [timecode, setTimecode] = useState('00:00:00:00');
+const enter = { hidden: { opacity: 0, y: 28 }, visible: { opacity: 1, y: 0 } };
 
-  // Cinematic running timecode counter effect
-  useEffect(() => {
-    let frame = 0;
-    const interval = setInterval(() => {
-      frame++;
-      const frames = String(frame % 24).padStart(2, '0');
-      const seconds = String(Math.floor((frame / 24) % 60)).padStart(2, '0');
-      const minutes = String(Math.floor((frame / 1440) % 60)).padStart(2, '0');
-      setTimecode(`00:${minutes}:${seconds}:${frames}`);
-    }, 41.6); // ~24 fps timing
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const scrollToSection = (e, id) => {
-    e.preventDefault();
-    const elem = document.querySelector(id);
-    if (elem) {
-      elem.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+export default function Hero() {
+  const reduceMotion = useReducedMotion();
+  const sectionRef = useRef(null);
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end start'] });
+  const portraitY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : 130]);
+  const portraitRotate = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : -6]);
+  const portraitTiltX = useTransform(scrollYProgress, [0, 1], [reduceMotion ? 0 : 2, reduceMotion ? 0 : -2]);
 
   return (
-    <section 
-      id="hero" 
-      className="relative min-h-screen flex flex-col justify-center items-center pt-28 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#080808]"
-    >
-      {/* Cinematic subtle background grid & vignette */}
-      <div className="absolute inset-0 cinematic-grid opacity-30 pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#080808]/40 via-transparent to-[#080808] pointer-events-none" />
-      <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-[#FF6B35]/10 rounded-full blur-[140px] pointer-events-none" />
-
-      {/* Top Camera Slate & REC bar */}
-      <div className="w-full max-w-5xl mb-6 flex items-center justify-between text-[11px] font-mono tracking-widest text-zinc-500 border-b border-[#1c1c1c] pb-3 px-2">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
-          <span className="text-zinc-300 font-semibold tracking-wider">REC</span>
-          <span className="hidden sm:inline text-zinc-600">|</span>
-          <span className="hidden sm:inline text-zinc-400">RAW 4K DCI</span>
+    <section id="hero" ref={sectionRef} className="hero-grid relative min-h-[100svh] overflow-hidden bg-paper text-ink">
+      <div className="absolute inset-0 editorial-grid opacity-70" aria-hidden="true" />
+      <div className="relative z-[1] mx-auto flex min-h-[100svh] max-w-[1600px] flex-col justify-between px-5 pb-7 pt-28 sm:px-10 lg:px-16">
+        <div className="flex items-start justify-between font-mono text-[10px] uppercase tracking-[0.18em] sm:text-xs">
+          <span>Portfolio / Creative Practice</span>
+          <span className="max-w-36 text-right sm:max-w-none">Video · Graphic · Motion</span>
         </div>
-        
-        <div className="flex items-center gap-4">
-          <span className="text-[#FF6B35] font-semibold">{timecode}</span>
-          <span className="hidden sm:inline text-zinc-600">|</span>
-          <span className="hidden sm:inline text-zinc-400">23.976 FPS</span>
-          <span className="text-zinc-600">|</span>
-          <span className="text-zinc-300">ISO 800</span>
+
+        <div className="relative mt-16 grid flex-1 grid-cols-1 items-center lg:mt-0 lg:grid-cols-12">
+          <motion.div
+            initial={reduceMotion ? 'visible' : 'hidden'} animate="visible" transition={{ staggerChildren: 0.12, delayChildren: 0.15 }}
+            className="relative z-[2] lg:col-span-9"
+          >
+            <motion.p variants={enter} transition={{ duration: 0.7 }} className="mb-3 font-mono text-[10px] uppercase tracking-[0.22em] text-red-700 sm:text-xs">
+              VIDEO EDITOR | GRAPHIC DESIGNER | MOTION DESIGNER
+            </motion.p>
+            <motion.div variants={enter} transition={{ duration: 0.8 }} className="hero-name-stage">
+              <h1 className="hero-name-layer hero-name-back max-w-[7ch] font-display text-[clamp(4.5rem,14vw,12rem)] font-extrabold uppercase leading-[0.72] tracking-[-0.095em]">
+                NAVNEET RANJAN
+              </h1>
+              <motion.div
+                style={reduceMotion ? undefined : { y: portraitY, rotate: portraitRotate, rotateX: portraitTiltX }}
+                className="hero-portrait-depth pointer-events-none"
+              >
+                <div className="portrait-frame hero-portrait-frame relative w-full border-[8px] border-red-700 bg-[#e8e3d9] shadow-[18px_18px_0_#171717]">
+                  <img
+                    src="/assets/profile/navneet-hero.png"
+                    alt="NAVNEET RANJAN illustrated portrait"
+                    className="hero-portrait-image w-full object-cover object-center mix-blend-multiply"
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
+                    onError={(event) => {
+                      const image = event.currentTarget;
+                      if (image.dataset.fallback !== 'true') {
+                        image.dataset.fallback = 'true';
+                        image.src = '/assets/profile/navneet-about-portrait.png';
+                        return;
+                      }
+                      image.style.display = 'none';
+                      image.parentElement.classList.add('portrait-missing');
+                    }}
+                  />
+                  <div className="portrait-fallback absolute inset-0 -z-0 items-center justify-center bg-[#d9d2c5] font-display text-[6rem] font-bold tracking-[-0.12em] text-red-800/80">N<span className="text-ink">.</span></div>
+                  <span className="absolute -bottom-8 -left-6 rotate-[-4deg] bg-paper px-2 py-1.5 font-mono text-[8px] uppercase tracking-[0.13em]">NAVNEET RANJAN / VISUAL STORYTELLER</span>
+                </div>
+              </motion.div>
+              <h1 aria-hidden="true" className="hero-name-layer hero-name-front max-w-[7ch] font-display text-[clamp(4.5rem,14vw,12rem)] font-extrabold uppercase leading-[0.72] tracking-[-0.095em]">
+                NAVNEET RANJAN
+              </h1>
+            </motion.div>
+            <motion.div variants={enter} transition={{ duration: 0.8 }} className="relative mt-4 flex items-center gap-3 sm:mt-7">
+              <span className="h-px w-9 bg-red-700 sm:w-16" />
+              <p className="font-display text-[clamp(2.4rem,9.2vw,8rem)] font-bold uppercase leading-[0.78] tracking-[-0.075em]">Portfolio</p>
+            </motion.div>
+            <motion.div variants={enter} transition={{ duration: 0.7 }} className="mt-8 flex max-w-xl flex-col gap-5 sm:mt-10 sm:flex-row sm:items-end sm:justify-between">
+              <p className="max-w-sm text-sm leading-relaxed text-ink/70 sm:text-base">Video edits, graphic compositions and motion pieces shaped around a story.</p>
+              <a href="#projects" className="editorial-link inline-flex w-fit items-center gap-2 border-b border-ink/50 pb-2 font-mono text-[10px] uppercase tracking-[0.16em] hover:border-red-700 hover:text-red-700">
+                Explore selected work <ArrowUpRight size={14} />
+              </a>
+            </motion.div>
+          </motion.div>
+
         </div>
-      </div>
 
-      {/* Main Content Area */}
-      <div className="max-w-4xl mx-auto text-center z-10">
-        
-        {/* Role Tag badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#121212] border border-[#242424] text-xs uppercase tracking-widest text-zinc-300 mb-6"
-        >
-          <Film className="w-3.5 h-3.5 text-[#FF6B35]" />
-          <span>{personalData.tagline}</span>
-        </motion.div>
-
-        {/* Large Bold Cinematic Headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-          className="font-display font-black text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight leading-[0.98] text-white uppercase mb-6"
-        >
-          Crafting Stories <br className="hidden sm:block" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-200 to-zinc-400">
-            Through Every
-          </span>{' '}
-          <span className="text-[#FF6B35] relative inline-block">
-            Frame.
-            <svg 
-              className="absolute -bottom-2 left-0 w-full text-[#FF6B35]/40" 
-              viewBox="0 0 100 8" 
-              preserveAspectRatio="none"
-              height="6"
-            >
-              <path d="M0,5 Q50,0 100,5" fill="none" stroke="currentColor" strokeWidth="2" />
-            </svg>
-          </span>
-        </motion.h1>
-
-        {/* Short Introduction Paragraph */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-          className="max-w-2xl mx-auto text-base sm:text-lg text-zinc-400 font-normal leading-relaxed mb-10 px-2"
-        >
-          {personalData.shortIntro}
-        </motion.p>
-
-        {/* Action Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-5 mb-14"
-        >
-          {/* Prominent View My Work Button */}
-          <a
-            href="#work"
-            onClick={(e) => scrollToSection(e, '#work')}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-[#FF6B35] text-black font-bold text-sm tracking-wider uppercase hover:bg-[#ff814f] transition-all duration-200 shadow-lg shadow-[#FF6B35]/25 hover:shadow-[#FF6B35]/40 active:scale-95 group"
-          >
-            <span>View My Work</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </a>
-
-          {/* Contact Me Button */}
-          <a
-            href="#contact"
-            onClick={(e) => scrollToSection(e, '#contact')}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-[#141414] hover:bg-[#1f1f1f] border border-[#2b2b2b] hover:border-zinc-500 text-white font-medium text-sm tracking-wider uppercase transition-all duration-200 active:scale-95"
-          >
-            <span>Contact Me</span>
-          </a>
-
-          {/* Watch Showreel Quick Trigger */}
-          <button
-            type="button"
-            onClick={onOpenFeaturedShowreel}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-transparent hover:bg-white/5 text-zinc-300 hover:text-white border border-dashed border-zinc-700 hover:border-[#FF6B35] font-medium text-xs tracking-wider uppercase transition-all"
-          >
-            <Play className="w-3.5 h-3.5 fill-[#FF6B35] text-[#FF6B35]" />
-            <span>Play Showreel</span>
-          </button>
-        </motion.div>
-
-        {/* Featured Video Preview Frame / Visual Hook */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="relative max-w-4xl mx-auto rounded-xl overflow-hidden border border-[#222222] bg-[#111111] shadow-2xl group cursor-pointer"
-          onClick={onOpenFeaturedShowreel}
-        >
-          {/* Film Letterbox preview */}
-          <div className="relative aspect-[21/9] sm:aspect-[2.39/1] overflow-hidden">
-            <img 
-              src={personalData.showreel.posterUrl}
-              alt="Cinematic frame preview"
-              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 filter brightness-90 contrast-110"
-              loading="eager"
-            />
-            {/* Cinematic Gradient Vignette */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-black/20 to-black/40" />
-            
-            {/* Center Play Button Overlay */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center group-hover:scale-110 group-hover:bg-[#FF6B35] group-hover:text-black group-hover:border-transparent transition-all duration-300 text-white shadow-2xl">
-                <Play className="w-7 h-7 fill-current ml-1" />
-              </div>
-            </div>
-
-            {/* Top Slate Label */}
-            <div className="absolute top-3 left-4 flex items-center gap-2 text-[10px] sm:text-xs font-mono uppercase tracking-wider text-zinc-300 bg-black/70 backdrop-blur-sm px-2.5 py-1 rounded border border-white/10">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B35]" />
-              <span>Cinematic Showreel Preview</span>
-            </div>
-
-            {/* Bottom Info Bar */}
-            <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[11px] font-mono text-zinc-300">
-              <span className="bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded border border-white/10">
-                {personalData.showreel.resolution}
-              </span>
-              <span className="bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded border border-white/10 text-[#FF6B35]">
-                Click to Watch Full Reel
-              </span>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Small Scroll Indicator */}
-      <div className="mt-12 z-10 flex flex-col items-center gap-2 text-zinc-500">
-        <span className="text-[10px] font-mono tracking-widest uppercase text-zinc-500">
-          Scroll to explore
-        </span>
-        <a 
-          href="#work"
-          onClick={(e) => scrollToSection(e, '#work')}
-          className="w-6 h-10 rounded-full border border-zinc-700 flex items-start justify-center p-1.5 hover:border-[#FF6B35] transition-colors"
-          aria-label="Scroll down to work section"
-        >
-          <div className="w-1 h-2 bg-[#FF6B35] rounded-full animate-bounce" />
-        </a>
+        <div className="mt-14 flex items-end justify-between border-t border-ink/20 pt-4 font-mono text-[9px] uppercase tracking-[0.16em] sm:text-[10px]">
+          <span>Video Editing · Graphic Design · Motion Graphics</span>
+          <a href="#about" className="group flex items-center gap-2" aria-label="Scroll to about section">Scroll to explore <span className="scroll-arrow inline-flex h-8 w-8 items-center justify-center rounded-full border border-ink/40 group-hover:border-red-700 group-hover:text-red-700"><ArrowDown size={14} /></span></a>
+        </div>
       </div>
     </section>
   );

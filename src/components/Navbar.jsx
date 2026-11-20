@@ -1,133 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { Film, Menu, X, ArrowUpRight, Clapperboard } from 'lucide-react';
-import { personalData } from '../data/personalData';
+import { useEffect, useState } from 'react';
+import { ArrowUpRight, Menu, X } from 'lucide-react';
+
+const links = [['About', '#about'], ['Practice', '#skills'], ['Work', '#projects'], ['Showreel', '#showcase'], ['Contact', '#contact']];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  const [open, setOpen] = useState(false);
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const update = () => setScrolled(window.scrollY > 48);
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    return () => window.removeEventListener('scroll', update);
   }, []);
 
-  const navLinks = [
-    { name: 'Home', href: '#hero' },
-    { name: 'Work', href: '#work' },
-    { name: 'Showreel', href: '#showreel' },
-    { name: 'About', href: '#about' },
-    { name: 'Skills', href: '#skills' },
-    { name: 'Process', href: '#process' },
-    { name: 'Contact', href: '#contact' }
-  ];
-
-  const handleLinkClick = (e, href) => {
-    e.preventDefault();
-    setMobileMenuOpen(false);
-    const target = document.querySelector(href);
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
-    <header 
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-        scrolled 
-          ? 'bg-[#080808]/90 backdrop-blur-md border-b border-[#1c1c1c] py-3.5 shadow-2xl shadow-black/60' 
-          : 'bg-transparent py-5'
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        
-        {/* Brand / Logo */}
-        <a 
-          href="#hero" 
-          onClick={(e) => handleLinkClick(e, '#hero')}
-          className="group flex items-center gap-3 focus:outline-none"
-        >
-          <div className="w-9 h-9 rounded-md bg-[#141414] border border-[#262626] flex items-center justify-center text-[#FF6B35] group-hover:border-[#FF6B35]/60 transition-colors">
-            <Clapperboard className="w-5 h-5 text-[#FF6B35]" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-display font-bold text-base sm:text-lg tracking-wider text-white group-hover:text-[#FF6B35] transition-colors uppercase">
-              {personalData.name}
-            </span>
-            <span className="text-[10px] tracking-widest text-zinc-500 uppercase -mt-0.5 font-mono">
-              Post-Production
-            </span>
-          </div>
-        </a>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-7">
-          {navLinks.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              onClick={(e) => handleLinkClick(e, link.href)}
-              className="text-xs uppercase tracking-widest text-zinc-400 hover:text-white transition-colors relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#FF6B35] hover:after:w-full after:transition-all"
-            >
-              {link.name}
-            </a>
-          ))}
-        </nav>
-
-        {/* Right CTA Button */}
-        <div className="hidden sm:flex items-center gap-4">
-          <a
-            href="#contact"
-            onClick={(e) => handleLinkClick(e, '#contact')}
-            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase bg-[#FF6B35] text-black hover:bg-[#ff814f] transition-all duration-200 shadow-md shadow-[#FF6B35]/20 hover:shadow-[#FF6B35]/30 active:scale-95"
-          >
-            <span>Let's Talk</span>
-            <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-          </a>
-        </div>
-
-        {/* Mobile Menu Toggle Button */}
-        <div className="flex md:hidden">
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-lg bg-[#141414] border border-[#222222] text-zinc-300 hover:text-white focus:outline-none"
-            aria-label="Toggle navigation menu"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
+    <header className={`fixed inset-x-0 top-0 z-40 transition-colors duration-300 ${scrolled ? 'border-b border-white/10 bg-ink/95 text-paper backdrop-blur-md' : 'bg-transparent text-ink'}`}>
+      <div className="mx-auto flex max-w-[1600px] items-center justify-between px-5 py-4 sm:px-10 lg:px-16">
+        <a href="#hero" className="font-display text-xs font-bold uppercase tracking-[-0.035em] sm:text-sm">NAVNEET RANJAN</a>
+        <nav className="hidden items-center gap-8 md:flex">{links.map(([label, href], index) => <a key={href} href={href} className="font-mono text-[9px] uppercase tracking-[0.16em] opacity-70 transition-opacity hover:opacity-100"><span className="mr-2 text-red-700">0{index + 1}</span>{label}</a>)}</nav>
+        <a href="https://github.com/navneetnr" target="_blank" rel="noreferrer" className="hidden items-center gap-2 font-mono text-[9px] uppercase tracking-[0.14em] sm:flex">GitHub <ArrowUpRight size={13} /></a>
+        <button type="button" className="grid h-9 w-9 place-items-center border border-current/30 md:hidden" onClick={() => setOpen(!open)} aria-label={open ? 'Close navigation' : 'Open navigation'}>{open ? <X size={17} /> : <Menu size={17} />}</button>
       </div>
-
-      {/* Mobile Drawer Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-[#0c0c0c] border-b border-[#1f1f1f] px-6 py-6 space-y-4 animate-in slide-in-from-top-4 duration-200">
-          <div className="flex flex-col space-y-3">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={(e) => handleLinkClick(e, link.href)}
-                className="text-sm uppercase tracking-widest text-zinc-300 hover:text-[#FF6B35] py-2 border-b border-[#181818] transition-colors"
-              >
-                {link.name}
-              </a>
-            ))}
-          </div>
-          <div className="pt-2">
-            <a
-              href="#contact"
-              onClick={(e) => handleLinkClick(e, '#contact')}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-full text-xs font-semibold tracking-wider uppercase bg-[#FF6B35] text-black hover:bg-[#ff814f] transition-all"
-            >
-              <span>Let's Talk</span>
-              <ArrowUpRight className="w-4 h-4" />
-            </a>
-          </div>
-        </div>
-      )}
+      {open && <nav className="border-t border-white/10 bg-ink px-5 py-4 text-paper md:hidden">{links.map(([label, href], index) => <a key={href} href={href} onClick={() => setOpen(false)} className="flex justify-between border-b border-white/10 py-3 font-mono text-[10px] uppercase tracking-widest"><span>{label}</span><span className="text-red-400">0{index + 1} ↗</span></a>)}</nav>}
     </header>
   );
 }

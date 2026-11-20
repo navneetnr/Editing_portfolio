@@ -1,221 +1,39 @@
-import React, { useState, useRef } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize, Film, Disc } from 'lucide-react';
-import { personalData } from '../data/personalData';
+import { motion, useReducedMotion } from 'framer-motion';
+import { Film, Plus } from 'lucide-react';
 
 export default function Showreel() {
-  const videoRef = useRef(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [currentTime, setCurrentTime] = useState('00:00');
-  const [duration, setDuration] = useState('01:45');
-  const [progress, setProgress] = useState(0);
-
-  const formatSeconds = (sec) => {
-    const mins = Math.floor(sec / 60);
-    const secs = Math.floor(sec % 60);
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  };
-
-  const handleTimeUpdate = () => {
-    if (!videoRef.current) return;
-    const current = videoRef.current.currentTime;
-    const total = videoRef.current.duration || 105;
-    setCurrentTime(formatSeconds(current));
-    setProgress((current / total) * 100);
-  };
-
-  const togglePlay = () => {
-    if (!videoRef.current) return;
-    if (isPlaying) {
-      videoRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      videoRef.current.play().then(() => {
-        setIsPlaying(true);
-      }).catch((e) => {
-        console.warn("Autoplay/play policy:", e);
-      });
-    }
-  };
-
-  const toggleMute = () => {
-    if (!videoRef.current) return;
-    videoRef.current.muted = !isMuted;
-    setIsMuted(!isMuted);
-  };
-
-  const toggleFullscreen = () => {
-    if (!videoRef.current) return;
-    if (videoRef.current.requestFullscreen) {
-      videoRef.current.requestFullscreen();
-    }
-  };
-
-  const handleSeek = (e) => {
-    if (!videoRef.current) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const pos = (e.clientX - rect.left) / rect.width;
-    const total = videoRef.current.duration || 105;
-    videoRef.current.currentTime = pos * total;
-  };
+  const reduceMotion = useReducedMotion();
 
   return (
-    <section id="showreel" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0c0c0c] border-y border-[#181818] relative overflow-hidden">
-      
-      {/* Background cinematic aura */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[300px] bg-[#FF6B35]/5 rounded-full blur-[150px] pointer-events-none" />
-
-      <div className="max-w-6xl mx-auto">
-        
-        {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#161616] border border-[#262626] text-xs font-mono uppercase tracking-widest text-[#FF6B35] mb-4">
-            <Film className="w-3.5 h-3.5" />
-            <span>Master Reel</span>
+    <section id="showcase" className="showcase-section overflow-hidden bg-ink px-5 py-24 text-paper sm:px-10 sm:py-32 lg:px-16">
+      <div className="mx-auto max-w-[1400px]">
+        <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+          <div>
+            <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.22em] text-red-400">05 / Edit · Design · Motion</p>
+            <h2 className="font-display text-[clamp(3.4rem,10vw,9rem)] font-bold uppercase leading-[0.77] tracking-[-0.085em]">Showreel<span className="text-red-500">.</span></h2>
           </div>
-          
-          <h2 className="font-display font-black text-3xl sm:text-5xl text-white uppercase tracking-tight mb-4">
-            {personalData.showreel.heading}
-          </h2>
-
-          <p className="text-zinc-400 text-sm sm:text-base leading-relaxed">
-            {personalData.showreel.subheading}
-          </p>
+          <p className="max-w-sm text-sm leading-relaxed text-paper/60">A home for a real reel preview. Add your own showreel video when you’re ready to share it.</p>
         </div>
 
-        {/* Theater Video Presentation Box */}
-        <div className="relative rounded-2xl overflow-hidden bg-black border border-[#282828] shadow-2xl shadow-black group">
-          
-          {/* Cinema Letterbox Container */}
-          <div className="relative aspect-[16/9] md:aspect-[2.39/1] overflow-hidden bg-black">
-            <video
-              ref={videoRef}
-              src={personalData.showreel.videoUrl}
-              poster={personalData.showreel.posterUrl}
-              playsInline
-              onTimeUpdate={handleTimeUpdate}
-              onLoadedMetadata={() => {
-                if (videoRef.current && videoRef.current.duration) {
-                  setDuration(formatSeconds(videoRef.current.duration));
-                }
-              }}
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-              className="w-full h-full object-cover filter contrast-105 brightness-95 cursor-pointer"
-              onClick={togglePlay}
-            />
-
-            {/* Subtle cinema letterbox shadows */}
-            <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/80 via-transparent to-black/60" />
-
-            {/* Play Button Overlay (when paused) */}
-            {!isPlaying && (
-              <div 
-                className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] cursor-pointer"
-                onClick={togglePlay}
-              >
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#FF6B35] text-black flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 shadow-2xl shadow-[#FF6B35]/40">
-                  <Play className="w-9 h-9 sm:w-11 sm:h-11 fill-current ml-1" />
-                </div>
-              </div>
-            )}
-
-            {/* Live Audio Meter Simulation Indicator */}
-            {isPlaying && (
-              <div className="absolute top-4 right-4 flex items-end gap-1 h-5 px-2.5 py-1 rounded bg-black/60 backdrop-blur-sm border border-white/10 pointer-events-none">
-                <span className="w-1 bg-[#FF6B35] h-3 animate-pulse" />
-                <span className="w-1 bg-[#FF6B35] h-4 animate-pulse [animation-delay:150ms]" />
-                <span className="w-1 bg-[#FF6B35] h-2 animate-pulse [animation-delay:300ms]" />
-                <span className="w-1 bg-[#FF6B35] h-5 animate-pulse [animation-delay:75ms]" />
-              </div>
-            )}
-
-            {/* Top Film Slate Info */}
-            <div className="absolute top-4 left-4 flex items-center gap-2 text-xs font-mono text-zinc-300 bg-black/70 backdrop-blur-sm px-3 py-1 rounded border border-white/10">
-              <span className="w-2 h-2 rounded-full bg-[#FF6B35]" />
-              <span className="font-semibold">{personalData.name}</span>
-              <span className="text-zinc-600">/</span>
-              <span>SHOWREEL 2026</span>
-            </div>
-
-            {/* Custom Bottom Player Control Bar */}
-            <div className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black via-black/80 to-transparent">
-              
-              {/* Timeline Progress Bar (Clickable) */}
-              <div 
-                className="w-full h-1.5 bg-zinc-800 rounded-full mb-3 cursor-pointer relative overflow-hidden group/track"
-                onClick={handleSeek}
-              >
-                <div 
-                  className="h-full bg-[#FF6B35] relative rounded-full transition-all duration-100"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-
-              {/* Controls Row */}
-              <div className="flex items-center justify-between text-xs text-white">
-                <div className="flex items-center gap-4">
-                  <button
-                    type="button"
-                    onClick={togglePlay}
-                    className="p-1 text-zinc-300 hover:text-[#FF6B35] transition-colors"
-                    aria-label={isPlaying ? 'Pause' : 'Play'}
-                  >
-                    {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 fill-current" />}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={toggleMute}
-                    className="p-1 text-zinc-300 hover:text-white transition-colors"
-                    aria-label={isMuted ? 'Unmute' : 'Mute'}
-                  >
-                    {isMuted ? <VolumeX className="w-5 h-5 text-red-400" /> : <Volume2 className="w-5 h-5" />}
-                  </button>
-
-                  <div className="font-mono text-xs text-zinc-400">
-                    <span className="text-white">{currentTime}</span> / <span>{duration}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <span className="hidden sm:inline font-mono text-[11px] text-zinc-400 uppercase">
-                    {personalData.showreel.resolution}
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={toggleFullscreen}
-                    className="p-1 text-zinc-300 hover:text-[#FF6B35] transition-colors"
-                    aria-label="Toggle Fullscreen"
-                  >
-                    <Maximize className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
+        <motion.div
+          initial={reduceMotion ? false : { opacity: 0, y: 30 }}
+          whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.22 }}
+          transition={{ duration: 0.7 }}
+          className="relative mt-12 flex aspect-video min-h-[16rem] items-center justify-center overflow-hidden border border-paper/25 bg-[#202020] sm:min-h-[24rem]"
+        >
+          <div className="showcase-section absolute inset-0 opacity-80" aria-hidden="true" />
+          <div className="absolute inset-5 border border-paper/15 sm:inset-8" aria-hidden="true" />
+          <div className="absolute left-8 top-8 flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.17em] text-paper/55 sm:left-12 sm:top-12">
+            <Film size={13} className="text-red-400" /> SHOWREEL / MEDIA SLOT
           </div>
-
-          {/* Bottom Bar Info Slate */}
-          <div className="bg-[#121212] px-6 py-4 border-t border-[#1e1e1e] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#181818] border border-[#2b2b2b] flex items-center justify-center text-[#FF6B35]">
-                <Disc className="w-4 h-4 animate-spin [animation-duration:8s]" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-white">Master Showreel Cut</p>
-                <p className="text-[11px] text-zinc-400 font-mono">Pacing • Cinematic Color • Sound Design</p>
-              </div>
-            </div>
-
-            <div className="text-[11px] font-mono text-zinc-500">
-              Replaceable URL: <code className="text-zinc-300">src/data/personalData.js</code>
-            </div>
+          <div className="relative z-[1] flex flex-col items-center px-4 text-center">
+            <span className="mb-5 grid h-12 w-12 place-items-center rounded-full border border-red-500/70 text-red-400"><Plus size={20} /></span>
+            <p className="font-display text-[clamp(1.3rem,4vw,3.2rem)] font-bold uppercase tracking-[-0.05em]">Your showreel goes here</p>
+            <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.16em] text-paper/45">Placeholder — no video supplied</p>
           </div>
-
-        </div>
-
+          <span className="absolute bottom-8 right-8 font-mono text-[9px] tracking-[0.15em] text-paper/45 sm:bottom-12 sm:right-12">NAVNEET RANJAN · 2026</span>
+        </motion.div>
       </div>
     </section>
   );

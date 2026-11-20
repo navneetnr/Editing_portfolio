@@ -7,31 +7,25 @@
  */
 
 export const personalData = {
-  name: "Navneet Ranjan",
-  role: "Video Editor & Creative Storyteller",
-  headline: "Crafting Stories Through Every Frame.",
-  tagline: "Video Editor | Visual Storyteller | Creative Thinker",
+  name: "NAVNEET RANJAN",
+  role: "VIDEO EDITOR | GRAPHIC DESIGNER | MOTION DESIGNER",
+  headline: "Visual stories, frame by frame.",
+  tagline: "Video Editing | Graphic Designing | Motion Graphics",
   
   shortIntro:
-    "I transform raw footage into engaging visual experiences through cinematic editing, storytelling, motion graphics, and creative transitions.",
+    "I'm NAVNEET RANJAN, a creative enthusiast passionate about video editing, graphic design and visual storytelling. I enjoy turning ideas into engaging visuals through cinematic edits, creative compositions and motion graphics.",
 
   // Showreel section details
   showreel: {
-    heading: "A glimpse into my creative world.",
-    subheading: "A curated montage showcasing rhythm, pacing, cinematic color, and dynamic sound design.",
-    // Replace with your actual video or YouTube/Vimeo embed URL
-    // Sample high-quality royalty-free demo video
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    posterUrl: "https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&w=1920&q=80",
-    timecode: "00:01:45:12",
-    resolution: "4K DCI • 24 FPS",
+    heading: "Creative work in motion.",
+    subheading: "A space for NAVNEET RANJAN's own showreel media.",
   },
 
   // About Me section
   about: {
-    heading: "Behind Every Frame, There's a Story.",
+    heading: "Who am I?",
     description:
-      "I'm a passionate video editor interested in creating engaging visual content. I enjoy experimenting with storytelling, transitions, motion graphics, and cinematic visuals to make every video more impactful.",
+      "I'm NAVNEET RANJAN, a creative enthusiast passionate about video editing, graphic design and visual storytelling. I enjoy turning ideas into engaging visuals through cinematic edits, creative compositions and motion graphics.",
     
     // Creative philosophy pillars (focusing on craft without inventing fake experience)
     craftPillars: [
@@ -54,7 +48,7 @@ export const personalData = {
     ],
 
     // Placeholder portrait image (cinematic editorial photo)
-    portraitImage: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1200&q=80",
+    portraitImage: "/assets/profile/navneet-profile.png",
     location: "Available for Worldwide Remote Projects",
     statusBadge: "Open for Collaborations"
   },
@@ -69,22 +63,16 @@ export const personalData = {
       note: "Primary timeline workflow, multicam sync, and assembly"
     },
     {
-      name: "After Effects",
+      name: "Adobe After Effects",
       icon: "Sparkles",
       category: "Motion Graphics & VFX",
       note: "Title animations, motion tracking, and kinetic typography"
     },
     {
-      name: "DaVinci Resolve",
+      name: "Adobe Photoshop",
       icon: "Palette",
-      category: "Color Grading & Finishing",
-      note: "LUT management, color wheels, and node-based finishing"
-    },
-    {
-      name: "CapCut",
-      icon: "Smartphone",
-      category: "Short-Form Video Speed",
-      note: "Fast-turnaround vertical reels and dynamic captions"
+      category: "Graphic Design",
+      note: "Design compositions and visual assets"
     }
   ],
 
@@ -171,8 +159,7 @@ export const personalData = {
     email: "nrnavneetranjan@gmail.com",
     linkedin: "https://www.linkedin.com/in/ranjan-navneet/",
     instagram: "https://www.instagram.com/navnneeeeet?hvrq=MWk4cTJtNmk2czlvbg==",
-    github: "https://github.com/navneetranjan",
-    resumeUrl: "/Navneet_Ranjan_Resume.pdf",
+    github: "https://github.com/navneetnr",
     locationDisplay: "Mumbai / Open to Worldwide Remote",
     responseTimes: "Usually replies within 24 hours"
   }
