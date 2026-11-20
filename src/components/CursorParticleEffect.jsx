@@ -193,8 +193,13 @@ export default function CursorParticleEffect() {
       if (target || points.length > 1) {
         frameId = window.requestAnimationFrame(animate);
       } else {
-        head = null;
-        lastFrame = 0;
+        // Keep the cursor position between isolated pointer events. Clearing it
+        // here makes every slow mousemove look like a new first point, so the
+        // trail never gets the two points it needs to render.
+        if (points.length === 0) {
+          head = null;
+          lastFrame = 0;
+        }
       }
     }
 
