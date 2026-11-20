@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import FilmGrainOverlay from './components/FilmGrainOverlay';
+import CursorParticleEffect from './components/CursorParticleEffect';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import PortfolioGallery from './components/PortfolioGallery';
@@ -40,6 +41,7 @@ export default function App() {
     <div className="min-h-screen bg-[#080808] text-[#f5f5f5] selection:bg-[#FF6B35] selection:text-black relative">
       {/* Subtle cinematic grain texture overlay */}
       <FilmGrainOverlay />
+      <CursorParticleEffect />
 
       {/* Navigation Header */}
       <Navbar />

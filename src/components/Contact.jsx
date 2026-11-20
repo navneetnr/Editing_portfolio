@@ -63,6 +63,7 @@ export default function Contact({ onOpenResume }) {
             {/* Email link */}
             <a
               href={`mailto:${contact.email}`}
+              aria-label={`Email ${contact.email}`}
               className="p-4 rounded-xl bg-[#0f0f0f] border border-[#202020] hover:border-[#FF6B35] transition-colors flex items-center justify-between group"
             >
               <div className="flex items-center gap-3.5">
@@ -84,6 +85,7 @@ export default function Contact({ onOpenResume }) {
               href={contact.linkedin}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Open LinkedIn profile in a new tab"
               className="p-4 rounded-xl bg-[#0f0f0f] border border-[#202020] hover:border-[#FF6B35] transition-colors flex items-center justify-between group"
             >
               <div className="flex items-center gap-3.5">
@@ -93,7 +95,7 @@ export default function Contact({ onOpenResume }) {
                 <div>
                   <div className="text-[11px] font-mono uppercase text-zinc-500">LinkedIn Profile</div>
                   <div className="text-sm font-semibold text-white group-hover:text-[#FF6B35] transition-colors">
-                    Connect on LinkedIn
+                    LinkedIn
                   </div>
                 </div>
               </div>
@@ -105,6 +107,7 @@ export default function Contact({ onOpenResume }) {
               href={contact.instagram}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Open Instagram profile in a new tab"
               className="p-4 rounded-xl bg-[#0f0f0f] border border-[#202020] hover:border-[#FF6B35] transition-colors flex items-center justify-between group"
             >
               <div className="flex items-center gap-3.5">
@@ -114,7 +117,7 @@ export default function Contact({ onOpenResume }) {
                 <div>
                   <div className="text-[11px] font-mono uppercase text-zinc-500">Instagram</div>
                   <div className="text-sm font-semibold text-white group-hover:text-[#FF6B35] transition-colors">
-                    Follow @navneet.cuts
+                    Instagram
                   </div>
                 </div>
               </div>

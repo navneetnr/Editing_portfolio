@@ -168,9 +168,9 @@ export const personalData = {
   contact: {
     heading: "Have a Story to Tell? Let's Create It.",
     subheading: "Whether you need a cinematic reel, a polished YouTube edit, or high-retention social content, let's collaborate and bring your vision to life.",
-    email: "navneet.ranjan.editor@example.com",
-    linkedin: "https://linkedin.com/in/navneet-ranjan-editor",
-    instagram: "https://instagram.com/navneet.cuts",
+    email: "nrnavneetranjan@gmail.com",
+    linkedin: "https://www.linkedin.com/in/ranjan-navneet/",
+    instagram: "https://www.instagram.com/navnneeeeet?hvrq=MWk4cTJtNmk2czlvbg==",
     github: "https://github.com/navneetranjan",
     resumeUrl: "/Navneet_Ranjan_Resume.pdf",
     locationDisplay: "Mumbai / Open to Worldwide Remote",
