@@ -42,7 +42,7 @@
 }
 
 /* Film grain effect */
-.cursor-particle-canvas {
+.cursor-ribbon-canvas {
   position: fixed;
   inset: 0;
   z-index: 45;
