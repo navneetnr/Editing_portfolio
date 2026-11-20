@@ -1,36 +1,40 @@
 import { useEffect, useRef } from 'react';
 
-const MAX_POINTS = 52;
-const COLOR_STEP_MS = 5000;
-const PALETTE = ['#10B981', '#06B6D4', '#8B5CF6', '#EC4899', '#F97316', '#3B82F6']
-  .map((hex) => [1, 3, 5].map((index) => parseInt(hex.slice(index, index + 2), 16)));
+const COLORS = ['#10B981', '#06B6D4', '#8B5CF6', '#EC4899', '#F97316', '#3B82F6']
+  .map((hex) => [1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16)));
+const COLOR_DURATION = 5000;
+const TRAIL_LIFETIME = 1050;
+const MAX_POINTS = 112;
+const SAMPLE_DISTANCE = 3;
+const MAX_TRAIL_DISTANCE = 390;
 
-function mixColor(from, to, amount) {
-  return from.map((channel, index) => Math.round(channel + (to[index] - channel) * amount));
-}
+const mix = (from, to, amount) => from.map((channel, index) => (
+  Math.round(channel + (to[index] - channel) * amount)
+));
+const rgba = (color, alpha) => `rgba(${color.join(',')},${alpha})`;
 
 export default function CursorParticleEffect() {
   const canvasRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const context = canvas?.getContext('2d');
+    const context = canvas?.getContext('2d', { alpha: true });
     if (!canvas || !context) return undefined;
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const touchInput = window.matchMedia('(hover: none), (pointer: coarse), (max-width: 768px)');
-    if (reducedMotion.matches || touchInput.matches) return undefined;
+    const touchDevice = window.matchMedia('(hover: none), (pointer: coarse)');
+    if (reducedMotion.matches || touchDevice.matches) return undefined;
 
-    let width = window.innerWidth;
-    let height = window.innerHeight;
-    let pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+    let width = 0;
+    let height = 0;
+    let pixelRatio = 1;
     let frameId = 0;
     let lastFrame = 0;
-    let lastInput = 0;
-    const cycleStart = performance.now();
+    let lastPointerTime = 0;
     let target = null;
     let head = null;
     let points = [];
+    const colorCycleStart = performance.now();
 
     const resize = () => {
       width = window.innerWidth;
@@ -41,138 +45,170 @@ export default function CursorParticleEffect() {
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
       context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      context.clearRect(0, 0, width, height);
     };
 
-    const handlePointerMove = (event) => {
-      if (event.pointerType && event.pointerType !== 'mouse') return;
-      target = { x: event.clientX, y: event.clientY };
-      lastInput = performance.now();
+    const requestFrame = () => {
+      if (!frameId) frameId = window.requestAnimationFrame(animate);
+    };
+
+    const onMouseMove = (event) => {
+      const now = performance.now();
+      const elapsed = lastPointerTime ? Math.max(now - lastPointerTime, 1) : 16;
+      const previous = target || head || { x: event.clientX, y: event.clientY };
+      const speed = Math.min(Math.hypot(event.clientX - previous.x, event.clientY - previous.y) / elapsed, 2);
+      lastPointerTime = now;
+
       if (!head) {
-        head = { ...target };
-        points.push({ ...head, time: lastInput, speed: 0 });
+        head = { x: event.clientX, y: event.clientY };
+        points = [{ x: head.x, y: head.y, time: now, speed }];
+        target = null;
+      } else {
+        target = { x: event.clientX, y: event.clientY, speed };
       }
-      startAnimation();
-    };
-
-    const stopFollowing = () => {
-      target = null;
+      requestFrame();
     };
 
     const currentColor = (time) => {
-      const cyclePosition = (time - cycleStart) / COLOR_STEP_MS;
-      const currentIndex = Math.floor(cyclePosition) % PALETTE.length;
-      const nextIndex = (currentIndex + 1) % PALETTE.length;
-      const progress = cyclePosition - Math.floor(cyclePosition);
-      // Ease the blend so the hue shift feels gradual throughout each five-second beat.
+      const position = (time - colorCycleStart) / COLOR_DURATION;
+      const index = Math.floor(position) % COLORS.length;
+      const next = (index + 1) % COLORS.length;
+      const progress = position - Math.floor(position);
       const eased = progress * progress * (3 - 2 * progress);
-      return mixColor(PALETTE[currentIndex], PALETTE[nextIndex], eased);
+      return mix(COLORS[index], COLORS[next], eased);
     };
 
-    const strokeRibbon = (time, color, offset, widthScale, alpha, glow) => {
-      if (points.length < 2) return;
+    const buildStrand = (time, strand, speedFactor) => {
+      const result = [];
+      const progressDenominator = Math.max(points.length - 1, 1);
+      const phase = time * 0.00135 + strand * 0.72;
+      const spread = (strand - 4) * (8 + speedFactor * 8);
 
-      const trail = points.map((point, index) => {
-        const before = points[Math.max(0, index - 1)];
-        const after = points[Math.min(points.length - 1, index + 1)];
-        const dx = after.x - before.x;
-        const dy = after.y - before.y;
+      for (let index = 0; index < points.length; index += 1) {
+        const point = points[index];
+        const older = points[Math.min(index + 1, points.length - 1)];
+        const newer = points[Math.max(index - 1, 0)];
+        const dx = newer.x - older.x;
+        const dy = newer.y - older.y;
         const length = Math.hypot(dx, dy) || 1;
-        const normalizedAge = Math.max(0, 1 - (time - point.time) / 950);
-        const fade = normalizedAge * normalizedAge;
-        const speedWidth = Math.min(point.speed / 900, 1);
-        return {
-          x: point.x - (dy / length) * offset,
-          y: point.y + (dx / length) * offset,
-          fade,
-          speedWidth,
-        };
-      }).filter((point) => point.fade > 0.01);
+        const along = index / progressDenominator;
+        const ageFade = Math.max(0, 1 - (time - point.time) / TRAIL_LIFETIME);
+        const waveEnvelope = (7 + along * 21) * (0.72 + speedFactor * 0.65);
+        const wave = Math.sin(along * 11 + phase) * waveEnvelope
+          + Math.sin(along * 6.5 - phase * 0.65 + strand * 0.28) * waveEnvelope * 0.28;
+        const lateral = spread + wave;
 
-      if (trail.length < 2) return;
-      const first = trail[0];
-      const last = trail[trail.length - 1];
-      const gradient = context.createLinearGradient(first.x, first.y, last.x, last.y);
-      gradient.addColorStop(0, `rgba(${color.join(',')},${alpha * first.fade})`);
-      gradient.addColorStop(0.18, `rgba(${color.join(',')},${alpha * 0.78})`);
-      gradient.addColorStop(1, `rgba(${color.join(',')},0)`);
+        result.push({
+          x: point.x - (dy / length) * lateral,
+          y: point.y + (dx / length) * lateral,
+          fade: ageFade * ageFade,
+        });
+      }
+      return result;
+    };
+
+    const strokeStrand = (time, color, strand, speedFactor) => {
+      const path = buildStrand(time, strand, speedFactor);
+      if (path.length < 2) return;
+
+      // Path is newest-to-oldest. Fade its far tail while keeping the head clear.
+      const newest = path[0];
+      const oldest = path[path.length - 1];
+      const shade = strand % 2 === 0 ? mix(color, [255, 255, 255], 0.34) : mix(color, [8, 12, 20], 0.24);
+      const gradient = context.createLinearGradient(oldest.x, oldest.y, newest.x, newest.y);
+      gradient.addColorStop(0, rgba(shade, 0));
+      gradient.addColorStop(0.2, rgba(shade, 0.16 * newest.fade));
+      gradient.addColorStop(1, rgba(shade, (strand === 4 ? 0.53 : 0.34) * newest.fade));
 
       context.beginPath();
-      context.moveTo(first.x, first.y);
-      for (let index = 1; index < trail.length - 1; index += 1) {
-        const point = trail[index];
-        const next = trail[index + 1];
-        context.quadraticCurveTo(point.x, point.y, (point.x + next.x) / 2, (point.y + next.y) / 2);
+      context.moveTo(oldest.x, oldest.y);
+      for (let index = path.length - 1; index > 0; index -= 1) {
+        const start = path[index];
+        const end = path[index - 1];
+        const before = path[Math.min(index + 1, path.length - 1)];
+        const after = path[Math.max(index - 2, 0)];
+        const tension = 0.22;
+        context.bezierCurveTo(
+          start.x + (end.x - before.x) * tension,
+          start.y + (end.y - before.y) * tension,
+          end.x - (after.x - start.x) * tension,
+          end.y - (after.y - start.y) * tension,
+          end.x,
+          end.y,
+        );
       }
-      context.lineTo(last.x, last.y);
+
       context.strokeStyle = gradient;
-      context.lineWidth = widthScale * (1 + Math.min(first.speedWidth, 1) * 1.6);
+      context.lineWidth = strand === 4 ? 1.8 : 1.15;
       context.lineCap = 'round';
       context.lineJoin = 'round';
-      context.shadowColor = `rgba(${color.join(',')},${glow})`;
-      context.shadowBlur = glow * 14;
+      context.shadowColor = rgba(color, 0.42);
+      context.shadowBlur = 10;
       context.stroke();
     };
 
-    const animate = (time) => {
-      const elapsed = lastFrame ? Math.min(time - lastFrame, 32) : 16.7;
+    function animate(time) {
+      frameId = 0;
+      const elapsed = lastFrame ? Math.min(time - lastFrame, 40) : 16.7;
       lastFrame = time;
 
       if (target && head) {
         const dx = target.x - head.x;
         const dy = target.y - head.y;
         const distance = Math.hypot(dx, dy);
-        const speed = Math.min(distance / Math.max(elapsed, 1) * 16.7, 70);
-        const easing = 1 - Math.exp(-elapsed / 22);
+        const easing = 1 - Math.exp(-elapsed / 19);
         head.x += dx * easing;
         head.y += dy * easing;
 
-        if (distance > 0.35) {
-          points.unshift({ x: head.x, y: head.y, time, speed });
-          if (points.length > MAX_POINTS) points.length = MAX_POINTS;
+        const lastPoint = points[0];
+        if (!lastPoint || Math.hypot(head.x - lastPoint.x, head.y - lastPoint.y) >= SAMPLE_DISTANCE) {
+          points.unshift({ x: head.x, y: head.y, time, speed: target.speed });
         }
+        if (distance < 0.3) target = null;
       }
 
-      points = points.filter((point) => time - point.time < 950);
+      points = points.filter((point) => time - point.time < TRAIL_LIFETIME);
+      let traveled = 0;
+      for (let index = 1; index < points.length; index += 1) {
+        traveled += Math.hypot(points[index - 1].x - points[index].x, points[index - 1].y - points[index].y);
+        if (traveled > MAX_TRAIL_DISTANCE) {
+          points.length = index;
+          break;
+        }
+      }
+      if (points.length > MAX_POINTS) points.length = MAX_POINTS;
+
       context.clearRect(0, 0, width, height);
-      context.globalCompositeOperation = 'lighter';
-      const color = currentColor(time);
+      if (points.length > 1) {
+        const averageSpeed = points.slice(0, 10).reduce((sum, point) => sum + point.speed, 0) / Math.min(points.length, 10);
+        const speedFactor = Math.min(averageSpeed / 1.25, 1.5);
+        const color = currentColor(time);
+        context.globalCompositeOperation = 'source-over';
+        for (let strand = 0; strand < 9; strand += 1) {
+          strokeStrand(time, color, strand, speedFactor);
+        }
+        context.shadowBlur = 0;
+      }
 
-      // Offset filaments around a fine core create a layered liquid-ink ribbon.
-      strokeRibbon(time, color, -3.5, 1.25, 0.24, 0.22);
-      strokeRibbon(time, color, 2.8, 1.65, 0.3, 0.32);
-      strokeRibbon(time, color, 0, 1.05, 0.62, 0.48);
-
-      context.shadowBlur = 0;
-      context.globalCompositeOperation = 'source-over';
-      if (points.length || time - lastInput < 1000) {
+      if (target || points.length > 1) {
         frameId = window.requestAnimationFrame(animate);
       } else {
-        frameId = 0;
         head = null;
         lastFrame = 0;
       }
-    };
-
-    const startAnimation = () => {
-      if (!frameId) frameId = window.requestAnimationFrame(animate);
-    };
+    }
 
     resize();
     window.addEventListener('resize', resize, { passive: true });
-    window.addEventListener('pointermove', handlePointerMove, { passive: true });
-    window.addEventListener('blur', stopFollowing);
-    document.addEventListener('pointerleave', stopFollowing);
-
-    // The color cycle is time based and begins with emerald green.
-    startAnimation();
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
 
     return () => {
       if (frameId) window.cancelAnimationFrame(frameId);
       window.removeEventListener('resize', resize);
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('blur', stopFollowing);
-      document.removeEventListener('pointerleave', stopFollowing);
+      window.removeEventListener('mousemove', onMouseMove);
       points = [];
+      target = null;
+      head = null;
     };
   }, []);
 
