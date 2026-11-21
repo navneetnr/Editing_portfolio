@@ -1,0 +1,88 @@
+.contact-inquiry-form {
+  position: relative;
+  min-width: 0;
+  border-left: 2px solid #b51f29;
+  padding-left: clamp(1rem, 2.5vw, 2rem);
+}
+
+.contact-field {
+  display: block;
+  min-width: 0;
+  color: #171717;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .62rem;
+  letter-spacing: .13em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.contact-field > span { display: block; }
+.contact-field > span span { color: #a91f22; }
+
+.contact-field input,
+.contact-field textarea {
+  display: block;
+  width: 100%;
+  margin-top: .65rem;
+  border: 1px solid rgba(23, 23, 23, .28);
+  border-radius: 0;
+  background: rgba(255, 255, 255, .28);
+  padding: .85rem .9rem;
+  color: #171717;
+  font-family: 'Space Grotesk', Inter, system-ui, sans-serif;
+  font-size: .95rem;
+  letter-spacing: 0;
+  line-height: 1.5;
+  text-transform: none;
+  transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+
+.contact-field textarea { min-height: 9rem; resize: vertical; }
+.contact-field input::placeholder,
+.contact-field textarea::placeholder { color: rgba(23, 23, 23, .48); }
+.contact-field input:focus,
+.contact-field textarea:focus { outline: none; border-color: #a91f22; background: rgba(255, 255, 255, .55); box-shadow: 3px 3px 0 rgba(181, 31, 41, .28); }
+
+.contact-submit {
+  display: inline-flex;
+  min-height: 3.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  border: 1px solid #171717;
+  background: #171717;
+  padding: .85rem 1.1rem;
+  color: #f1eee7;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .65rem;
+  font-weight: 600;
+  letter-spacing: .14em;
+  transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+
+.contact-submit:not(:disabled):hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 #b51f29; }
+.contact-submit:focus-visible { outline: 2px solid #a91f22; outline-offset: 3px; }
+.contact-submit:disabled { cursor: wait; opacity: .72; }
+.contact-submit-spinner { animation: contact-spin .9s linear infinite; }
+
+@keyframes contact-spin { to { transform: rotate(360deg); } }
+
+.contact-form-status { min-height: 1.5rem; color: rgba(23, 23, 23, .68); font-size: .85rem; line-height: 1.5; }
+.contact-form-status[data-state='success'] { color: #176b3a; }
+.contact-form-status[data-state='error'] { color: #a91f22; }
+
+.contact-honeypot {
+  position: absolute;
+  top: auto;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-submit-spinner { animation: none; }
+  .contact-field input,
+  .contact-field textarea,
+  .contact-submit { transition: none; }
+}
