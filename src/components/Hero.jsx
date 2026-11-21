@@ -1,18 +1,67 @@
-import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
+import { motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 import { ArrowDown, ArrowUpRight } from 'lucide-react';
 import './Hero.css';
 
 const enter = { hidden: { opacity: 0, y: 28 }, visible: { opacity: 1, y: 0 } };
+const heroName = 'NAVNEET RANJAN';
+
+function renderNameLetters(word, reduceMotion, prefix) {
+  return Array.from(word, (character, index) => (
+    <MagneticLetter key={`${prefix}-${character}-${index}`} character={character} reduceMotion={reduceMotion} />
+  ));
+}
+
+function MagneticLetter({ character, reduceMotion }) {
+  const targetX = useMotionValue(0);
+  const targetY = useMotionValue(0);
+  const targetRotate = useMotionValue(0);
+  const targetScale = useMotionValue(1);
+  const x = useSpring(targetX, { stiffness: 360, damping: 28, mass: 0.35 });
+  const y = useSpring(targetY, { stiffness: 360, damping: 28, mass: 0.35 });
+  const rotate = useSpring(targetRotate, { stiffness: 360, damping: 28, mass: 0.35 });
+  const scale = useSpring(targetScale, { stiffness: 360, damping: 28, mass: 0.35 });
+
+  const handlePointerMove = (event) => {
+    if (reduceMotion || event.pointerType === 'touch') return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const horizontal = (event.clientX - (bounds.left + bounds.width / 2)) / (bounds.width / 2 || 1);
+    const vertical = (event.clientY - (bounds.top + bounds.height / 2)) / (bounds.height / 2 || 1);
+    targetX.set(horizontal * 3.5);
+    targetY.set(vertical * 3.5);
+    targetRotate.set(horizontal * 2);
+    targetScale.set(1.035);
+  };
+
+  const resetLetter = () => {
+    targetX.set(0);
+    targetY.set(0);
+    targetRotate.set(0);
+    targetScale.set(1);
+  };
+
+  return (
+    <motion.span
+      className="hero-letter"
+      style={reduceMotion ? undefined : { x, y, rotate, scale }}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={resetLetter}
+      onPointerCancel={resetLetter}
+      aria-hidden="true"
+    >
+      {character}
+    </motion.span>
+  );
+}
 
 export default function Hero() {
   const reduceMotion = useReducedMotion();
   const sectionRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end start'] });
   // Keep the motion tied directly to Hero scroll progress so it reverses naturally.
-  const portraitY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : -42]);
-  const portraitRotate = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : -1.2]);
-  const portraitTiltX = useTransform(scrollYProgress, [0, 1], [reduceMotion ? 0 : 1, reduceMotion ? 0 : -1]);
+  const portraitY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : -24]);
+  const portraitRotate = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : -0.8]);
+  const portraitTiltX = useTransform(scrollYProgress, [0, 1], [reduceMotion ? 0 : 0.6, reduceMotion ? 0 : -0.6]);
 
   return (
     <section id="hero" ref={sectionRef} className="hero-grid relative min-h-[100svh] overflow-hidden bg-paper text-ink">
@@ -26,44 +75,44 @@ export default function Hero() {
         <div className="relative mt-16 grid flex-1 grid-cols-1 items-center lg:mt-0 lg:grid-cols-12">
           <motion.div
             initial={reduceMotion ? 'visible' : 'hidden'} animate="visible" transition={{ staggerChildren: 0.12, delayChildren: 0.15 }}
-            className="relative z-[2] lg:col-span-9"
+            className="relative z-[2] col-span-full"
           >
             <motion.p variants={enter} transition={{ duration: 0.7 }} className="mb-3 font-mono text-[10px] uppercase tracking-[0.22em] text-red-700 sm:text-xs">
               VIDEO EDITOR | GRAPHIC DESIGNER | MOTION DESIGNER
             </motion.p>
             <motion.div variants={enter} transition={{ duration: 0.8 }} className="hero-name-stage">
-              <h1 className="hero-name-layer hero-name-back max-w-[7ch] font-display text-[clamp(4.5rem,14vw,12rem)] font-extrabold uppercase leading-[0.72] tracking-[-0.095em]">
-                NAVNEET RANJAN
-              </h1>
-              <motion.div
-                style={reduceMotion ? undefined : { y: portraitY, rotate: portraitRotate, rotateX: portraitTiltX }}
-                className="hero-portrait-depth pointer-events-none"
-              >
-                <div className="portrait-frame hero-portrait-frame relative w-full border-[8px] border-red-700 bg-[#e8e3d9] shadow-[18px_18px_0_#171717]">
-                  <img
-                    src="/assets/profile/navneet-about-portrait.png"
-                    alt="NAVNEET RANJAN illustrated portrait"
-                    className="hero-portrait-image w-full object-cover object-center mix-blend-multiply"
-                    loading="eager"
-                    fetchPriority="high"
-                    decoding="async"
-                    onError={(event) => {
-                      const image = event.currentTarget;
-                      image.style.display = 'none';
-                      image.parentElement.classList.add('portrait-missing');
-                    }}
-                  />
-                  <div className="portrait-fallback absolute inset-0 -z-0 items-center justify-center bg-[#d9d2c5] font-display text-[6rem] font-bold tracking-[-0.12em] text-red-800/80">N<span className="text-ink">.</span></div>
-                  <span className="absolute -bottom-8 -left-6 rotate-[-4deg] bg-paper px-2 py-1.5 font-mono text-[8px] uppercase tracking-[0.13em]">NAVNEET RANJAN / VISUAL STORYTELLER</span>
-                </div>
-              </motion.div>
-              <h1 aria-hidden="true" className="hero-name-layer hero-name-front max-w-[7ch] font-display text-[clamp(4.5rem,14vw,12rem)] font-extrabold uppercase leading-[0.72] tracking-[-0.095em]">
-                NAVNEET RANJAN
+              <h1 aria-label={heroName} className="hero-name-title font-display font-extrabold uppercase text-ink">
+                <span className="hero-name-row" aria-hidden="true">{renderNameLetters('NAVNEET', reduceMotion, 'first')}</span>
+                <span className="hero-name-row hero-name-last" aria-hidden="true">
+                  {renderNameLetters('RANJAN', reduceMotion, 'last')}
+                  <motion.span
+                    style={reduceMotion ? undefined : { y: portraitY, rotate: portraitRotate, rotateX: portraitTiltX }}
+                    className="hero-portrait-depth pointer-events-none"
+                    aria-hidden="true"
+                  >
+                    <span className="portrait-frame hero-portrait-frame relative block w-full border-[8px] border-red-700 bg-[#e8e3d9] shadow-[18px_18px_0_#171717]">
+                      <img
+                        src="/assets/profile/navneet-about-portrait.png"
+                        alt=""
+                        className="hero-portrait-image w-full object-cover object-center mix-blend-multiply"
+                        loading="eager"
+                        fetchPriority="high"
+                        decoding="async"
+                        onError={(event) => {
+                          const image = event.currentTarget;
+                          image.style.display = 'none';
+                          image.parentElement.classList.add('portrait-missing');
+                        }}
+                      />
+                      <span className="portrait-fallback absolute inset-0 -z-0 items-center justify-center bg-[#d9d2c5] font-display text-[6rem] font-bold tracking-[-0.12em] text-red-800/80">N<span className="text-ink">.</span></span>
+                    </span>
+                  </motion.span>
+                </span>
               </h1>
             </motion.div>
-            <motion.div variants={enter} transition={{ duration: 0.8 }} className="relative mt-4 flex items-center gap-3 sm:mt-7">
+            <motion.div variants={enter} transition={{ duration: 0.8 }} className="relative mt-2 flex w-fit items-center gap-3 sm:mt-3">
+              <p className="font-display text-[clamp(1.3rem,5vw,4.5rem)] font-bold uppercase leading-[0.82] tracking-[-0.075em]">Portfolio</p>
               <span className="h-px w-9 bg-red-700 sm:w-16" />
-              <p className="font-display text-[clamp(2.4rem,9.2vw,8rem)] font-bold uppercase leading-[0.78] tracking-[-0.075em]">Portfolio</p>
             </motion.div>
             <motion.div variants={enter} transition={{ duration: 0.7 }} className="mt-8 flex max-w-xl flex-col gap-5 sm:mt-10 sm:flex-row sm:items-end sm:justify-between">
               <p className="max-w-sm text-sm leading-relaxed text-ink/70 sm:text-base">Video edits, graphic compositions and motion pieces shaped around a story.</p>

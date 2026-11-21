@@ -3,27 +3,43 @@
   display: inline-block;
   width: fit-content;
   max-width: 100%;
+  font-size: clamp(1.5rem, 9.6vw, 9rem);
   perspective: 1100px;
   isolation: isolate;
 }
 
-.hero-name-layer { margin: 0; }
-.hero-name-back { position: relative; z-index: 1; }
+.hero-name-title {
+  margin: 0;
+  font-size: inherit;
+  line-height: .8;
+  letter-spacing: -.095em;
+}
 
-.hero-name-front {
-  position: absolute;
-  z-index: 4;
-  inset: 0;
-  width: 100%;
-  pointer-events: none;
+.hero-name-row {
+  position: relative;
+  display: block;
+  width: max-content;
+  white-space: nowrap;
+}
+
+.hero-name-last { isolation: isolate; }
+
+.hero-name-title .hero-letter {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-letter {
+  display: inline-block;
+  transform-origin: 50% 70%;
 }
 
 .hero-portrait-depth {
   position: absolute;
-  z-index: 2;
-  top: 18%;
-  left: 48%;
-  width: 34%;
+  top: -18%;
+  right: -1.45em;
+  z-index: 1;
+  width: 1.75em;
   transform-style: preserve-3d;
   perspective: 1000px;
   transform-origin: 55% 45%;
@@ -48,10 +64,6 @@
   display: block;
   aspect-ratio: 7 / 5;
   height: auto;
-}
-
-@media (max-width: 640px) {
-  .hero-portrait-depth { top: 25%; left: 46%; width: 36%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
