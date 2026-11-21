@@ -1,5 +1,5 @@
 import { motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { ArrowDown, ArrowUpRight } from 'lucide-react';
 import './Hero.css';
 
@@ -175,14 +175,38 @@ function InteractiveGrid({ reduceMotion }) {
 export default function Hero() {
   const reduceMotion = useReducedMotion();
   const sectionRef = useRef(null);
+  const sectionHeightRef = useRef(0);
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end start'] });
-  // Keep the motion tied directly to Hero scroll progress so it reverses naturally.
-  const portraitY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : -24]);
-  const portraitRotate = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : -0.8]);
-  const portraitTiltX = useTransform(scrollYProgress, [0, 1], [reduceMotion ? 0 : 0.6, reduceMotion ? 0 : -0.6]);
+  useLayoutEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return undefined;
+
+    const measure = () => { sectionHeightRef.current = section.getBoundingClientRect().height; };
+    measure();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+    observer?.observe(section);
+    window.addEventListener('resize', measure, { passive: true });
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, []);
+
+  // Counter the Hero's upward travel slightly so the portrait falls through the viewport
+  // while remaining visible, then reaches zero opacity exactly as the section exits.
+  const portraitY = useTransform(scrollYProgress, (progress) => progress * sectionHeightRef.current * 1.38);
+  const portraitRotate = useTransform(scrollYProgress, [0, 1], [0, 2]);
+  const portraitTiltX = useTransform(scrollYProgress, [0, 1], [0, 2]);
+  const portraitScaleX = useTransform(scrollYProgress, [0, 0.36, 0.72, 1], [1, 0.88, 0.66, 0.5]);
+  const portraitScaleY = useTransform(scrollYProgress, [0, 0.36, 0.72, 1], [1, 1.06, 1.03, 0.9]);
+  const portraitOpacity = useTransform(scrollYProgress, [0, 0.55, 0.88, 0.99, 1], [1, 0.9, 0.55, 0.18, 0]);
+  const rectangularFrame = 'polygon(50% 0%, 100% 0%, 100% 30%, 100% 60%, 100% 100%, 70% 100%, 30% 100%, 0% 100%, 0% 60%, 0% 30%, 0% 0%, 30% 0%)';
+  const dropletFrame = 'polygon(50% 0%, 78% 20%, 95% 45%, 100% 68%, 95% 84%, 78% 96%, 50% 100%, 22% 96%, 5% 84%, 0% 68%, 5% 45%, 22% 20%)';
+  const portraitClip = useTransform(scrollYProgress, [0, 0.3, 0.74, 1], [rectangularFrame, rectangularFrame, dropletFrame, dropletFrame]);
+  const portraitFilter = useTransform(scrollYProgress, [0, 0.8, 1], ['blur(0px)', 'blur(0.4px)', 'blur(1.2px)']);
 
   return (
-    <section id="hero" ref={sectionRef} className="hero-grid relative min-h-[100svh] overflow-hidden bg-paper text-ink">
+    <section id="hero" ref={sectionRef} className="hero-grid relative min-h-[100svh] overflow-visible bg-paper text-ink">
       <InteractiveGrid reduceMotion={reduceMotion} />
       <div className="relative z-[1] mx-auto flex min-h-[100svh] max-w-[1600px] flex-col justify-between px-5 pb-7 pt-28 sm:px-10 lg:px-16">
         <div className="flex items-start justify-between font-mono text-[10px] uppercase tracking-[0.18em] sm:text-xs">
@@ -204,11 +228,21 @@ export default function Hero() {
                 <span className="hero-name-row hero-name-last" aria-hidden="true">
                   {renderNameLetters('RANJAN', reduceMotion, 'last')}
                   <motion.span
-                    style={reduceMotion ? undefined : { y: portraitY, rotate: portraitRotate, rotateX: portraitTiltX }}
+                    style={reduceMotion ? undefined : {
+                      y: portraitY,
+                      rotate: portraitRotate,
+                      rotateX: portraitTiltX,
+                      scaleX: portraitScaleX,
+                      scaleY: portraitScaleY,
+                      opacity: portraitOpacity,
+                    }}
                     className="hero-portrait-depth pointer-events-none"
                     aria-hidden="true"
                   >
-                    <span className="portrait-frame hero-portrait-frame relative block w-full border-[8px] border-red-700 bg-[#e8e3d9] shadow-[18px_18px_0_#171717]">
+                    <span
+                      className="portrait-frame hero-portrait-frame relative block w-full border-[8px] border-red-700 bg-[#e8e3d9]"
+                      style={reduceMotion ? undefined : { clipPath: portraitClip, filter: portraitFilter }}
+                    >
                       <img
                         src="/assets/profile/navneet-about-portrait.png"
                         alt=""

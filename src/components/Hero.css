@@ -50,6 +50,8 @@
   right: -1.45em;
   z-index: 1;
   width: 1.75em;
+  filter: drop-shadow(18px 18px 0 #171717) drop-shadow(9px 15px 11px rgba(23, 23, 23, .22));
+  will-change: transform, opacity;
   transform-style: preserve-3d;
   perspective: 1000px;
   transform-origin: 55% 45%;
@@ -57,8 +59,6 @@
 
 .hero-portrait-frame {
   transform-style: preserve-3d;
-  filter: drop-shadow(9px 15px 11px rgba(23, 23, 23, .22));
-  will-change: transform;
 }
 
 .hero-portrait-frame::after {
@@ -77,5 +77,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-portrait-frame { will-change: auto; }
+  .hero-portrait-depth { will-change: auto; }
 }
