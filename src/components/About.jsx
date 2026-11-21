@@ -7,6 +7,7 @@ const tools = [
   { number: '01', name: 'Adobe Premiere Pro', mark: 'Pr' },
   { number: '02', name: 'Adobe After Effects', mark: 'Ae' },
   { number: '03', name: 'Adobe Photoshop', mark: 'Ps' },
+  { number: '04', name: 'CapCut', mark: 'Cc' },
 ];
 
 const words = [
@@ -92,7 +93,7 @@ export default function About() {
           <motion.div variants={revealLines} transition={{ duration: reduceMotion ? 0 : 0.55 }} className="about-tools">
             <div className="about-tools-heading">
               <span>TOOLS I CREATE WITH</span>
-              <span className="about-tools-mark">A—Z / 03</span>
+              <span className="about-tools-mark">A—Z / 04</span>
             </div>
             <div className="about-tool-list">
               {tools.map((tool) => (
