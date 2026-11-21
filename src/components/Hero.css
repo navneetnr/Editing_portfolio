@@ -1,3 +1,13 @@
+.editorial-grid-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.editorial-grid-canvas.editorial-grid-active {
+  background-image: none;
+}
+
 .hero-name-stage {
   position: relative;
   display: inline-block;

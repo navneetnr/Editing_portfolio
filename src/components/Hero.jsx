@@ -1,5 +1,5 @@
 import { motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { ArrowDown, ArrowUpRight } from 'lucide-react';
 import './Hero.css';
 
@@ -54,6 +54,124 @@ function MagneticLetter({ character, reduceMotion }) {
   );
 }
 
+function InteractiveGrid({ reduceMotion }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const context = canvas?.getContext('2d', { alpha: true });
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+    if (!canvas || !context || reduceMotion || !finePointer.matches) return undefined;
+
+    let width = 0;
+    let height = 0;
+    let pixelRatio = 1;
+    let frameId = 0;
+    let impulse = null;
+    let previousPointer = null;
+
+    const drawGrid = (now) => {
+      context.clearRect(0, 0, width, height);
+      context.strokeStyle = 'rgba(23, 23, 23, 0.08)';
+      context.lineWidth = 1;
+
+      let age = 0;
+      let strength = 0;
+      if (impulse) {
+        age = now - impulse.time;
+        if (age > 1150) impulse = null;
+        else strength = impulse.strength * Math.exp(-age / 470);
+      }
+
+      const spacing = width <= 640 ? 32 : 44;
+      const displace = (x, y) => {
+        if (!impulse || strength < 0.06) return [x, y];
+        const dx = x - impulse.x;
+        const dy = y - impulse.y;
+        const distance = Math.hypot(dx, dy);
+        if (distance < 1 || distance > 520) return [x, y];
+        const ring = Math.sin(distance * 0.045 - age * 0.016);
+        const offset = ring * strength * Math.exp(-distance / 165);
+        return [x + (dx / distance) * offset, y + (dy / distance) * offset];
+      };
+
+      const drawLine = (vertical, position) => {
+        context.beginPath();
+        let started = false;
+        const limit = vertical ? height : width;
+        for (let step = 0; step <= limit; step += 8) {
+          const point = vertical ? displace(position, step) : displace(step, position);
+          if (!started) {
+            context.moveTo(point[0], point[1]);
+            started = true;
+          } else {
+            context.lineTo(point[0], point[1]);
+          }
+        }
+        context.stroke();
+      };
+
+      for (let x = 0.5; x <= width; x += spacing) drawLine(true, x);
+      for (let y = 0.5; y <= height; y += spacing) drawLine(false, y);
+    };
+
+    const requestDraw = () => {
+      if (!frameId) frameId = window.requestAnimationFrame(animate);
+    };
+
+    function animate(now) {
+      frameId = 0;
+      drawGrid(now);
+      if (impulse) requestDraw();
+    }
+
+    const resize = () => {
+      const bounds = canvas.getBoundingClientRect();
+      width = bounds.width;
+      height = bounds.height;
+      pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(width * pixelRatio);
+      canvas.height = Math.round(height * pixelRatio);
+      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      drawGrid(performance.now());
+    };
+
+    const onPointerMove = (event) => {
+      if (event.pointerType !== 'mouse') return;
+      const bounds = canvas.getBoundingClientRect();
+      if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) return;
+
+      const now = performance.now();
+      let strength = 4;
+      if (previousPointer) {
+        const elapsed = Math.max(now - previousPointer.time, 1);
+        const speed = Math.hypot(event.clientX - previousPointer.x, event.clientY - previousPointer.y) / elapsed;
+        strength = Math.min(8, 3.5 + speed * 2.5);
+      }
+      previousPointer = { x: event.clientX, y: event.clientY, time: now };
+      impulse = { x: event.clientX - bounds.left, y: event.clientY - bounds.top, time: now, strength };
+      requestDraw();
+    };
+
+    canvas.classList.add('editorial-grid-active');
+    resize();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(resize);
+    observer?.observe(canvas);
+    window.addEventListener('resize', resize, { passive: true });
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+
+    return () => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+      observer?.disconnect();
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('pointermove', onPointerMove);
+      canvas.classList.remove('editorial-grid-active');
+    };
+  }, [reduceMotion]);
+
+  return <canvas ref={canvasRef} className="editorial-grid editorial-grid-canvas absolute inset-0 opacity-70" aria-hidden="true" />;
+}
+
 export default function Hero() {
   const reduceMotion = useReducedMotion();
   const sectionRef = useRef(null);
@@ -65,7 +183,7 @@ export default function Hero() {
 
   return (
     <section id="hero" ref={sectionRef} className="hero-grid relative min-h-[100svh] overflow-hidden bg-paper text-ink">
-      <div className="absolute inset-0 editorial-grid opacity-70" aria-hidden="true" />
+      <InteractiveGrid reduceMotion={reduceMotion} />
       <div className="relative z-[1] mx-auto flex min-h-[100svh] max-w-[1600px] flex-col justify-between px-5 pb-7 pt-28 sm:px-10 lg:px-16">
         <div className="flex items-start justify-between font-mono text-[10px] uppercase tracking-[0.18em] sm:text-xs">
           <span>Portfolio / Creative Practice</span>
