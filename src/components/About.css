@@ -202,7 +202,7 @@
 .about-portrait-mask {
   position: relative;
   z-index: 2;
-  width: 78%;
+  width: 92%;
   transform: rotate(2deg);
   will-change: clip-path;
 }
@@ -224,7 +224,7 @@
 .about-portrait-image-wrap {
   position: relative;
   overflow: hidden;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1166 / 1349;
   background: var(--about-white);
 }
 
@@ -290,6 +290,17 @@
   transform: rotate(-5deg) translateZ(-40px);
 }
 
+.about-note-portrait {
+  position: absolute;
+  bottom: 12%;
+  left: 5%;
+  z-index: 3;
+  width: clamp(5.5rem, 22vw, 10rem);
+  height: auto;
+  object-fit: contain;
+  transform: rotate(-7deg);
+}
+
 .about-side-note {
   position: absolute;
   top: 20%;
@@ -305,7 +316,7 @@
 .about-hand-note {
   position: absolute;
   bottom: 15%;
-  left: 1%;
+  left: 34%;
   z-index: 3;
   color: #df5158;
   font-family: 'Segoe Print', 'Bradley Hand', cursive;
@@ -339,7 +350,7 @@
   .about-layout { grid-template-columns: minmax(0, 1fr) minmax(0, .82fr); gap: 2.5rem; width: min(100% - 2.5rem, 760px); min-height: auto; padding: 5.5rem 0 4rem; }
   .about-title { font-size: clamp(4.8rem, 12vw, 7rem); }
   .about-portrait-column { min-height: 33rem; }
-  .about-portrait-mask { width: 84%; }
+  .about-portrait-mask { width: 92%; }
   .about-red-paper { right: 0; }
   .about-side-note { right: -.65rem; }
   .about-bottom-line { width: min(100% - 2.5rem, 760px); }
@@ -361,13 +372,13 @@
   .about-tools { margin-top: 2.5rem; }
   .about-tool { min-height: 3.45rem; grid-template-columns: 1.8rem 2.3rem minmax(0, 1fr) 1rem; gap: .55rem; }
   .about-tool-name { font-size: .88rem; }
-  .about-portrait-column { min-height: 29rem; padding: .5rem 1rem 0; }
+  .about-portrait-column { min-height: 29rem; padding: .5rem 0 0; }
   .about-portrait-parallax { width: min(100%, 26rem); }
-  .about-portrait-mask { width: 90%; }
+  .about-portrait-mask { width: 94%; }
   .about-portrait-frame { padding: .55rem .55rem 2.7rem; box-shadow: 10px 12px 0 var(--about-red), 17px 20px 0 rgba(0, 0, 0, .55); }
   .about-photo-caption { font-size: .45rem; }
   .about-side-note { right: -.1rem; top: 18%; font-size: .46rem; }
-  .about-hand-note { left: 0; bottom: 13%; font-size: 1rem; }
+  .about-hand-note { left: 34%; bottom: 13%; font-size: 1rem; }
   .about-scroll-cue { margin-top: 1.8rem; }
   .about-bottom-line { width: min(100% - 2.25rem, 36rem); gap: .7rem; font-size: .44rem; letter-spacing: .1em; }
   .about-bottom-line span:nth-child(2) { text-align: center; }

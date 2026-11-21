@@ -139,6 +139,14 @@ export default function About() {
             </motion.div>
             <motion.span {...collageReveal(0.16, 22)} className="about-red-paper" aria-hidden="true" />
             <motion.span {...collageReveal(0.32)} className="about-side-note" aria-hidden="true">FRAME BY FRAME<br />IDEA BY IDEA</motion.span>
+            <motion.img
+              {...collageReveal(0.42, 16)}
+              className="about-note-portrait"
+              src="/assets/profile/navneet-about-portrait-outline.png"
+              alt="NAVNEET RANJAN portrait on the red paper collage"
+              loading="lazy"
+              decoding="async"
+            />
             <motion.span {...collageReveal(0.48)} className="about-hand-note" aria-hidden="true">made of moments ↗</motion.span>
             <motion.span {...collageReveal(0.62, 8)} className="about-crosshair about-crosshair-one" aria-hidden="true">✳</motion.span>
             <motion.span {...collageReveal(0.74, 8)} className="about-crosshair about-crosshair-two" aria-hidden="true">＋</motion.span>

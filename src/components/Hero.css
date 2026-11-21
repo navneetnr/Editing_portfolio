@@ -16,15 +16,14 @@
   inset: 0;
   width: 100%;
   pointer-events: none;
-  clip-path: inset(57% 0 13% 0);
 }
 
 .hero-portrait-depth {
   position: absolute;
   z-index: 2;
-  top: 24%;
-  left: 59%;
-  width: 38%;
+  top: 18%;
+  left: 48%;
+  width: 34%;
   transform-style: preserve-3d;
   perspective: 1000px;
   transform-origin: 55% 45%;
@@ -32,7 +31,6 @@
 
 .hero-portrait-frame {
   transform-style: preserve-3d;
-  animation: hero-portrait-float 8s ease-in-out infinite;
   filter: drop-shadow(9px 15px 11px rgba(23, 23, 23, .22));
   will-change: transform;
 }
@@ -52,17 +50,10 @@
   height: auto;
 }
 
-@keyframes hero-portrait-float {
-  0%, 100% { transform: rotateY(-8deg) rotateX(2deg) rotateZ(3deg) translateY(0); }
-  50% { transform: rotateY(-5deg) rotateX(0deg) rotateZ(2deg) translateY(-6px); }
-}
-
 @media (max-width: 640px) {
-  .hero-portrait-depth { top: 30%; left: 49%; width: 47%; }
-  .hero-name-front { clip-path: inset(58% 0 12% 0); }
+  .hero-portrait-depth { top: 25%; left: 46%; width: 36%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-portrait-frame { animation: none; filter: none; will-change: auto; }
-  .hero-name-front { clip-path: none; }
+  .hero-portrait-frame { will-change: auto; }
 }

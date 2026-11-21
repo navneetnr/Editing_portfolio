@@ -9,8 +9,8 @@ export default function Showreel() {
       <div className="mx-auto max-w-[1400px]">
         <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
           <div>
-            <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.22em] text-red-400">05 / Edit · Design · Motion</p>
-            <h2 className="font-display text-[clamp(3.4rem,10vw,9rem)] font-bold uppercase leading-[0.77] tracking-[-0.085em]">Showreel<span className="text-red-500">.</span></h2>
+            <p className="mb-4 inline-block bg-red-700 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white">05 / Edit · Design · Motion</p>
+            <h2 className="inline-block bg-red-700 px-3 py-2 font-display text-[clamp(3.4rem,10vw,9rem)] font-bold uppercase leading-[0.77] tracking-[-0.085em] text-white">Showreel<span className="text-white/70">.</span></h2>
           </div>
           <p className="max-w-sm text-sm leading-relaxed text-paper/60">A home for a real reel preview. Add your own showreel video when you’re ready to share it.</p>
         </div>

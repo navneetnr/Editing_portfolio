@@ -9,9 +9,10 @@ export default function Hero() {
   const reduceMotion = useReducedMotion();
   const sectionRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end start'] });
-  const portraitY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : 130]);
-  const portraitRotate = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : -6]);
-  const portraitTiltX = useTransform(scrollYProgress, [0, 1], [reduceMotion ? 0 : 2, reduceMotion ? 0 : -2]);
+  // Keep the motion tied directly to Hero scroll progress so it reverses naturally.
+  const portraitY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : -42]);
+  const portraitRotate = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : -1.2]);
+  const portraitTiltX = useTransform(scrollYProgress, [0, 1], [reduceMotion ? 0 : 1, reduceMotion ? 0 : -1]);
 
   return (
     <section id="hero" ref={sectionRef} className="hero-grid relative min-h-[100svh] overflow-hidden bg-paper text-ink">
@@ -40,7 +41,7 @@ export default function Hero() {
               >
                 <div className="portrait-frame hero-portrait-frame relative w-full border-[8px] border-red-700 bg-[#e8e3d9] shadow-[18px_18px_0_#171717]">
                   <img
-                    src="/assets/profile/navneet-hero.png"
+                    src="/assets/profile/navneet-about-portrait.png"
                     alt="NAVNEET RANJAN illustrated portrait"
                     className="hero-portrait-image w-full object-cover object-center mix-blend-multiply"
                     loading="eager"
@@ -48,11 +49,6 @@ export default function Hero() {
                     decoding="async"
                     onError={(event) => {
                       const image = event.currentTarget;
-                      if (image.dataset.fallback !== 'true') {
-                        image.dataset.fallback = 'true';
-                        image.src = '/assets/profile/navneet-about-portrait.png';
-                        return;
-                      }
                       image.style.display = 'none';
                       image.parentElement.classList.add('portrait-missing');
                     }}
