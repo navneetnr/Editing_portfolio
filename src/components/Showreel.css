@@ -9,7 +9,8 @@
   border-top: 1px solid rgba(241, 238, 231, .17);
   border-bottom: 1px solid rgba(241, 238, 231, .17);
   padding: 1.25rem 0;
-  touch-action: pan-y;
+  touch-action: pan-x pan-y;
+  scrollbar-width: none;
 }
 
 .instagram-marquee-track {
@@ -38,196 +39,170 @@
   animation-play-state: paused;
 }
 
+.instagram-marquee.is-modal-open .instagram-marquee-track { animation-play-state: paused; }
+
 .instagram-marquee-card {
   position: relative;
-  display: flex;
-  width: clamp(14rem, 22vw, 19rem);
+  display: block;
+  width: clamp(13rem, 19vw, 17rem);
   aspect-ratio: 9 / 16;
   flex: 0 0 auto;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: space-between;
   overflow: hidden;
-  border: 1px solid rgba(241, 238, 231, .32);
-  background:
-    linear-gradient(145deg, rgba(181, 31, 41, .2), transparent 52%),
-    #202020;
-  padding: 1rem;
+  border: 1px solid rgba(239, 107, 112, .58);
+  background: #111;
+  padding: 0;
   color: #f1eee7;
   text-align: left;
   cursor: pointer;
-  box-shadow: 4px 5px 0 rgba(181, 31, 41, .72);
-  transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease, background-color .25s ease;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, .3), 3px 4px 0 rgba(181, 31, 41, .62);
+  transition: transform .35s cubic-bezier(.2,.75,.25,1), border-color .25s ease, box-shadow .25s ease;
 }
 
-.instagram-marquee-card::before,
 .instagram-marquee-card::after {
   position: absolute;
-  right: 1rem;
-  left: 1rem;
-  height: 1px;
-  background: rgba(241, 238, 231, .17);
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,.42), transparent 22%, transparent 54%, rgba(0,0,0,.78));
   content: '';
   pointer-events: none;
 }
 
-.instagram-marquee-card::before { top: 3rem; }
-.instagram-marquee-card::after { bottom: 3rem; }
+.instagram-marquee-card-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .65s cubic-bezier(.2,.75,.25,1); }
+.instagram-marquee-card-missing { position:absolute; inset:0; z-index:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.5rem; background:#101010; color:rgba(241,238,231,.62); font: .58rem 'JetBrains Mono',monospace; letter-spacing:.12em; }
+.instagram-marquee-card-missing small { color:#ef6b70; font-size:.52rem; letter-spacing:.04em; }
 
 .instagram-marquee-card:hover,
 .instagram-marquee-card.is-selected {
-  transform: translateY(-5px);
+  transform: scale(1.035);
   border-color: #ef6b70;
-  background-color: #262020;
-  box-shadow: 7px 9px 0 rgba(181, 31, 41, .88);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .45), 3px 4px 0 rgba(181, 31, 41, .9);
 }
+
+.instagram-marquee-card:hover .instagram-marquee-card-image,
+.instagram-marquee-card.is-selected .instagram-marquee-card-image { transform: scale(1.07); }
 
 .instagram-marquee-card-top,
 .instagram-marquee-card-bottom {
   position: relative;
   z-index: 1;
   display: flex;
+  position: absolute;
+  right: .85rem;
+  left: .85rem;
   justify-content: space-between;
   gap: .5rem;
   font: .55rem/1.5 'JetBrains Mono', monospace;
   letter-spacing: .13em;
 }
 
-.instagram-marquee-card-top { color: rgba(241, 238, 231, .6); }
+.instagram-marquee-card-top { top: .9rem; align-items:center; color: rgba(255,255,255,.82); }
 .instagram-marquee-card-top span:last-child,
 .instagram-marquee-card-bottom span:last-child { color: #ef6b70; }
 
-.instagram-marquee-card-index {
-  position: relative;
+.instagram-marquee-card-play {
+  position: absolute;
   z-index: 1;
-  align-self: center;
-  color: rgba(241, 238, 231, .88);
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(6rem, 13vw, 11rem);
-  font-weight: 700;
-  letter-spacing: -.09em;
-  line-height: .8;
-  text-shadow: 5px 5px 0 rgba(181, 31, 41, .8);
+  top: 50%; left: 50%;
+  display:grid; width:3.25rem; height:3.25rem; place-items:center;
+  transform:translate(-50%,-50%);
+  border:1px solid rgba(255,255,255,.75); border-radius:50%;
+  background:rgba(12,12,12,.28); color:#fff;
+  backdrop-filter:blur(5px);
 }
 
-.instagram-marquee-card-bottom { color: rgba(241, 238, 231, .75); }
+.instagram-marquee-card-bottom { bottom: .9rem; color: rgba(255,255,255,.9); }
 
 .instagram-marquee-card:focus-visible,
-.instagram-marquee-close:focus-visible,
-.instagram-reel-open:focus-visible {
+.instagram-modal-close:focus-visible,
+.instagram-modal-link:focus-visible {
   outline: 2px solid #ef6b70;
   outline-offset: 4px;
 }
 
-.instagram-marquee-player {
+.instagram-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  background: rgba(5, 5, 5, .84);
+  padding: 1rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.instagram-modal {
   position: relative;
-  width: min(100%, 25rem);
-  margin: 2rem auto 0;
+  display: flex;
+  width: min(100%, 34rem);
+  max-height: calc(100dvh - 2rem);
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(239, 107, 112, .52);
+  background: #101010;
+  padding: 1.1rem 1rem 0;
+  box-shadow: 0 28px 90px rgba(0,0,0,.7), 4px 5px 0 rgba(181,31,41,.72);
 }
 
-.instagram-marquee-close {
-  display: flex;
-  min-height: 2.75rem;
-  align-items: center;
-  justify-content: center;
-  gap: .55rem;
-  margin: 0 0 .75rem auto;
-  border: 1px solid rgba(241, 238, 231, .28);
-  background: transparent;
-  padding: .5rem .75rem;
-  color: rgba(241, 238, 231, .8);
-  font: .55rem 'JetBrains Mono', monospace;
-  letter-spacing: .12em;
+.instagram-modal-close {
+  position: absolute;
+  top: .65rem;
+  right: .65rem;
+  z-index: 3;
+  display: grid;
+  width: 2.6rem;
+  height: 2.6rem;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.3);
+  background: rgba(8,8,8,.82);
+  color: #fff;
   cursor: pointer;
-  transition: border-color .2s ease, color .2s ease, background-color .2s ease;
+  transition: background-color .2s ease, border-color .2s ease;
 }
+.instagram-modal-close:hover { border-color: #ef6b70; background: #b51f29; }
+.instagram-modal-close:focus-visible,
+.instagram-modal-link:focus-visible { outline: 2px solid #ef6b70; outline-offset: 3px; }
 
-.instagram-marquee-close:hover { border-color: #b51f29; background: #b51f29; color: #fff; }
-
-.instagram-reel-card {
-  min-width: 0;
-  overflow: hidden;
-  border: 1px solid rgba(241, 238, 231, .22);
-  background: #202020;
-  box-shadow: 0 18px 44px rgba(0, 0, 0, .28), 5px 6px 0 rgba(181, 31, 41, .68);
-  transition: box-shadow .22s ease, border-color .22s ease;
+.instagram-modal-content {
+  width: min(100%, 30rem);
+  max-height: calc(100dvh - 7rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: #fff;
 }
-
-.instagram-reel-card:hover { border-color: rgba(241, 238, 231, .55); box-shadow: 0 22px 50px rgba(0, 0, 0, .34), 7px 8px 0 rgba(181, 31, 41, .8); }
-
-.instagram-reel-card-heading,
-.instagram-reel-open {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  justify-content: space-between;
-  gap: .75rem;
-  padding: .8rem 1rem;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: .58rem;
-  letter-spacing: .14em;
-  line-height: 1.5;
-  text-transform: uppercase;
-}
-
-.instagram-reel-card-heading { color: rgba(241, 238, 231, .62); }
-.instagram-reel-card-heading span:last-child { color: #ef6b70; }
-
-.instagram-reel-embed {
-  display: flex;
-  min-width: 0;
-  min-height: 30rem;
-  align-items: flex-start;
-  justify-content: center;
-  overflow: hidden;
-  background: #171717;
-}
-
-.instagram-reel-embed .instagram-media,
-.instagram-reel-embed .instagram-media-rendered {
+.instagram-modal-content .instagram-media,
+.instagram-modal-content .instagram-media-rendered {
   box-sizing: border-box !important;
   width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
   margin: 0 auto !important;
 }
+.instagram-modal-content iframe { display: block; max-width: 100% !important; }
 
-.instagram-reel-embed iframe { display: block; max-width: 100% !important; }
-
-.instagram-reel-loading {
+.instagram-modal-link {
   display: flex;
-  min-height: 30rem;
-  flex-direction: column;
+  min-height: 3.25rem;
+  width: 100%;
   align-items: center;
-  justify-content: center;
-  gap: .8rem;
-  padding: 1.5rem;
-  color: rgba(241, 238, 231, .58);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: .58rem;
+  justify-content: space-between;
+  color: rgba(241,238,231,.78);
+  font: .58rem 'JetBrains Mono',monospace;
   letter-spacing: .14em;
-  text-align: center;
-}
-
-.instagram-reel-loading svg { color: #ef6b70; }
-.instagram-reel-loading small { color: rgba(241, 238, 231, .42); font-size: .55rem; letter-spacing: .06em; }
-
-.instagram-reel-open {
-  min-height: 3rem;
-  border-top: 1px solid rgba(241, 238, 231, .14);
-  color: rgba(241, 238, 231, .78);
   text-decoration: none;
-  transition: color .2s ease, background-color .2s ease;
 }
-
-.instagram-reel-open:hover { color: #fff; background: rgba(181, 31, 41, .2); }
-.instagram-reel-open span { color: #ef6b70; }
+.instagram-modal-link span { color: #ef6b70; }
+.instagram-reel-loading { display:flex; min-height:24rem; flex-direction:column; align-items:center; justify-content:center; gap:.8rem; color:rgba(241,238,231,.65); font:.6rem 'JetBrains Mono',monospace; letter-spacing:.12em; }
+.instagram-reel-loading svg { color:#ef6b70; }
 
 @media (max-width: 767px) {
   .instagram-marquee-viewport { padding: 1rem 0; }
+  .instagram-marquee-viewport { overflow-x: auto; }
+  .instagram-marquee-viewport::-webkit-scrollbar { display: none; }
   .instagram-marquee-track { animation-duration: 52s; }
-  .instagram-marquee-card { width: clamp(12rem, 64vw, 16rem); padding: .85rem; }
-  .instagram-marquee-card-index { font-size: clamp(6rem, 24vw, 9rem); }
+  .instagram-marquee-card { width: clamp(11rem, 62vw, 15rem); }
   .instagram-marquee-card-top,
   .instagram-marquee-card-bottom { font-size: .48rem; letter-spacing: .1em; }
   .instagram-reel-embed,
@@ -238,7 +213,6 @@
   .instagram-marquee-track { animation: none; transform: none; }
   .instagram-marquee-viewport { overflow-x: auto; }
   .instagram-marquee-card,
-  .instagram-reel-card,
-  .instagram-reel-open,
-  .instagram-marquee-close { transition: none; }
+  .instagram-modal-close,
+  .instagram-modal-link { transition: none; }
 }
