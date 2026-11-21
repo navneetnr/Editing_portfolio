@@ -6,6 +6,7 @@ const links = [['About', '#about'], ['Practice', '#skills'], ['Work', '#projects
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [heroVisible, setHeroVisible] = useState(true);
   const [open, setOpen] = useState(false);
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 48);
@@ -14,8 +15,25 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', update);
   }, []);
 
+  useEffect(() => {
+    const hero = document.getElementById('hero');
+    if (!hero || !('IntersectionObserver' in window)) return undefined;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      const visible = entry.isIntersecting && entry.intersectionRatio > 0;
+      setHeroVisible(visible);
+      if (!visible) setOpen(false);
+    }, { threshold: 0 });
+
+    observer.observe(hero);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <header className={`site-navbar fixed inset-x-0 top-0 z-40 text-white transition-all duration-300 ${scrolled ? 'is-scrolled border-b border-white/10' : ''}`}>
+    <header
+      aria-hidden={!heroVisible}
+      className={`site-navbar fixed inset-x-0 top-0 z-40 text-white ${heroVisible ? '' : 'is-hidden'} ${scrolled ? 'is-scrolled border-b border-white/10' : ''}`}
+    >
       <svg className="navbar-brush" viewBox="0 0 1600 100" preserveAspectRatio="none" aria-hidden="true">
         <path fill="#171717" d="M0 16 38 12 73 17 111 10 153 14 194 8 235 12 279 7 320 13 366 9 410 15 451 8 495 13 536 9 581 14 622 7 666 13 709 9 751 15 794 8 838 12 880 7 924 14 966 9 1008 15 1052 8 1097 13 1140 7 1185 14 1228 9 1272 15 1316 8 1359 13 1402 7 1448 14 1490 9 1534 15 1570 10 1600 17 1595 77 1560 72 1521 80 1480 74 1437 82 1397 76 1354 83 1312 77 1270 84 1227 76 1185 82 1141 75 1098 83 1054 77 1010 84 967 76 923 82 879 75 836 83 792 77 748 84 704 76 661 82 617 74 574 82 530 76 486 84 442 77 399 82 356 74 313 81 269 75 225 83 181 76 138 82 95 74 51 81 7 75Z" />
         <path fill="#a91f22" d="M0 78 63 73 104 77 168 70 229 77 292 72 352 79 414 71 480 77 543 70 605 76 670 69 731 76 794 70 858 77 921 69 984 75 1047 68 1110 75 1173 70 1237 77 1300 68 1364 75 1427 69 1491 76 1550 70 1600 75 1600 83 1548 79 1490 87 1426 80 1364 88 1300 79 1237 86 1172 79 1110 87 1046 78 984 86 921 79 858 87 793 79 731 86 670 78 605 86 543 79 480 87 414 79 352 86 292 78 229 85 168 77 104 84 63 78 0 85Z" />

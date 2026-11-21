@@ -1,8 +1,180 @@
 import { motion, useReducedMotion } from 'framer-motion';
-import { Film, Plus } from 'lucide-react';
+import { Film, Plus, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { instagramReelUrls } from '../data/instagramReels';
+import './Showreel.css';
+
+let instagramEmbedScriptPromise;
+const INSTAGRAM_EMBED_SCRIPT = 'https://www.instagram.com/embed.js';
+
+function isPublicReelUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:'
+      && ['instagram.com', 'www.instagram.com'].includes(url.hostname)
+      && /^\/reel\/[A-Za-z0-9_-]+\/?$/.test(url.pathname);
+  } catch {
+    return false;
+  }
+}
+
+function loadInstagramEmbedScript() {
+  if (window.instgrm?.Embeds?.process) return Promise.resolve();
+  if (instagramEmbedScriptPromise) return instagramEmbedScriptPromise;
+
+  instagramEmbedScriptPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = INSTAGRAM_EMBED_SCRIPT;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Instagram embed script failed to load.'));
+    document.head.appendChild(script);
+  });
+
+  return instagramEmbedScriptPromise;
+}
+
+function InstagramReelCard({ url, index, reduceMotion }) {
+  const cardRef = useRef(null);
+  const [nearViewport, setNearViewport] = useState(false);
+  const [embedError, setEmbedError] = useState(false);
+
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card) return undefined;
+    if (!('IntersectionObserver' in window)) {
+      setNearViewport(true);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setNearViewport(true);
+        observer.disconnect();
+      }
+    }, { rootMargin: '240px 0px' });
+    observer.observe(card);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!nearViewport) return undefined;
+    let cancelled = false;
+
+    loadInstagramEmbedScript()
+      .then(() => {
+        if (!cancelled) window.instgrm?.Embeds?.process();
+      })
+      .catch(() => {
+        if (!cancelled) setEmbedError(true);
+      });
+
+    return () => { cancelled = true; };
+  }, [nearViewport]);
+
+  return (
+    <motion.article
+      ref={cardRef}
+      className="instagram-reel-card instagram-reel-card-active"
+      whileHover={reduceMotion ? undefined : { y: -4 }}
+      transition={{ duration: 0.22, ease: 'easeOut' }}
+    >
+      <div className="instagram-reel-card-heading">
+        <span>0{index + 1} / INSTAGRAM REEL</span>
+        <span aria-hidden="true">↗</span>
+      </div>
+      <div className="instagram-reel-embed">
+        {nearViewport && !embedError ? (
+          <blockquote
+            className="instagram-media"
+            data-instgrm-permalink={url}
+            data-instgrm-version="14"
+            data-instgrm-captioned
+          >
+            <a href={url} target="_blank" rel="noreferrer">View this reel on Instagram</a>
+          </blockquote>
+        ) : (
+          <div className="instagram-reel-loading">
+            <Film size={18} aria-hidden="true" />
+            <span>{embedError ? 'PREVIEW UNAVAILABLE' : 'INSTAGRAM PREVIEW'}</span>
+            {embedError && <small>Open the original reel below.</small>}
+          </div>
+        )}
+      </div>
+      <a className="instagram-reel-open" href={url} target="_blank" rel="noreferrer">
+        OPEN REEL ON INSTAGRAM <span aria-hidden="true">↗</span>
+      </a>
+    </motion.article>
+  );
+}
+
+function InstagramReelMarquee({ reels, reduceMotion }) {
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const [touchPaused, setTouchPaused] = useState(false);
+  const reelIndices = reels.map((_, index) => index);
+  const doubledIndices = [...reelIndices, ...reelIndices];
+
+  const renderReelCard = (index, duplicate) => (
+    <button
+      key={`${duplicate ? 'duplicate-' : 'reel-'}${index}`}
+      type="button"
+      className={`instagram-marquee-card${selectedIndex === index ? ' is-selected' : ''}`}
+      onClick={() => setSelectedIndex(index)}
+      onPointerDown={(event) => {
+        if (event.pointerType === 'touch') setTouchPaused(true);
+      }}
+      aria-label={`Load Instagram Reel ${index + 1} in the player`}
+      tabIndex={duplicate ? -1 : 0}
+    >
+      <span className="instagram-marquee-card-top"><span>INSTAGRAM / REEL</span><span>↗</span></span>
+      <span className="instagram-marquee-card-index">{String(index + 1).padStart(2, '0')}</span>
+      <span className="instagram-marquee-card-bottom"><span>VIEW REEL</span><span>PLAY IN PLAYER ↗</span></span>
+    </button>
+  );
+
+  return (
+    <div className={`instagram-marquee mt-12${touchPaused ? ' is-touch-paused' : ''}`}>
+      <div className="instagram-marquee-viewport" role="region" aria-label="Instagram Reels" aria-roledescription="carousel">
+        <div className="instagram-marquee-track" style={reduceMotion ? { animation: 'none', transform: 'none' } : undefined}>
+          <div className="instagram-marquee-group" aria-label="Instagram Reels">
+            {reelIndices.map((index) => renderReelCard(index, false))}
+          </div>
+          <div className="instagram-marquee-group" aria-hidden="true">
+            {doubledIndices.slice(reels.length).map((index) => renderReelCard(index, true))}
+          </div>
+        </div>
+      </div>
+
+      {selectedIndex !== null && (
+        <motion.div
+          className="instagram-marquee-player"
+          initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.25, ease: 'easeOut' }}
+        >
+          <button
+            type="button"
+            className="instagram-marquee-close"
+            onClick={() => { setSelectedIndex(null); setTouchPaused(false); }}
+            aria-label="Close Instagram Reel player"
+          >
+            <X size={16} aria-hidden="true" /> CLOSE PLAYER
+          </button>
+          <InstagramReelCard
+            key={selectedIndex}
+            url={reels[selectedIndex]}
+            index={selectedIndex}
+            reduceMotion={reduceMotion}
+          />
+        </motion.div>
+      )}
+    </div>
+  );
+}
 
 export default function Showreel() {
   const reduceMotion = useReducedMotion();
+  const reels = instagramReelUrls.filter(isPublicReelUrl);
 
   return (
     <section id="showcase" className="showcase-section overflow-hidden bg-ink px-5 py-24 text-paper sm:px-10 sm:py-32 lg:px-16">
@@ -15,6 +187,9 @@ export default function Showreel() {
           <p className="max-w-sm text-sm leading-relaxed text-paper/60">A home for a real reel preview. Add your own showreel video when you’re ready to share it.</p>
         </div>
 
+        {reels.length > 0 ? (
+          <InstagramReelMarquee reels={reels} reduceMotion={reduceMotion} />
+        ) : (
         <motion.div
           initial={reduceMotion ? false : { opacity: 0, y: 30 }}
           whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
@@ -34,6 +209,7 @@ export default function Showreel() {
           </div>
           <span className="absolute bottom-8 right-8 font-mono text-[9px] tracking-[0.15em] text-paper/45 sm:bottom-12 sm:right-12">NAVNEET RANJAN · 2026</span>
         </motion.div>
+        )}
       </div>
     </section>
   );
